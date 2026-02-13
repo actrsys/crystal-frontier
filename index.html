@@ -181,9 +181,71 @@
             .nav-btn.active { background: var(--col-blue); color: #fff; font-size: 15px; }
             .nav-badge { margin-left: 6px; min-width: 18px; height: 18px; background: #fff; color: #000; border-radius: 99px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 2001; }
         }
+        /* === ここから：上部ナビゲーションバーのスタイル === */
+        .global-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1a1a1a; /* ヘッダーより少し暗い色 */
+            padding: 10px 20px;
+            border-bottom: 1px solid #333;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #e0e0e0;
+            /* 固定ヘッダーにする場合は以下を有効化 */
+            /* position: sticky; top: 0; z-index: 2000; */
+        }
+        
+        .nav-brand {
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            color: #38bdf8; /* テーマカラーに合わせて調整してください */
+        }
+        
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(56, 189, 248, 0.2);
+            color: #fff;
+            border-color: #38bdf8;
+        }
+        
+        /* スマホ対応 (画面幅 600px以下) */
+        @media (max-width: 600px) {
+            .global-nav {
+                padding: 8px 12px;
+            }
+            .nav-brand {
+                font-size: 0.9rem;
+            }
+            .nav-links a {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+        }
+        /* === ここまで：上部ナビゲーションバーのスタイル === */
     </style>
 </head>
 <body>
+    <nav class="global-nav">
+        <div class="nav-brand">Crystal Frontier Database</div>
+        
+        <div class="nav-links">
+            <a href="rulebook/index.html" target="_blank">?? ルールブック</a>
+        </div>
+    </nav>
     <div id="hover-preview" onclick="closePreviewMobile()">
         <img id="preview-img" src="" onclick="event.stopPropagation()"> <div id="preview-close-btn" onclick="closePreviewMobile()">×</div>
     </div>
@@ -718,4 +780,5 @@
     </script>
 </body>
 </html>
+
 
