@@ -38,12 +38,10 @@ body {
     overflow: hidden; 
 }
 
-/* PCでは閉じるボタンエリアは非表示 */
 .mobile-sidebar-header {
     display: none;
 }
 
-/* サイドバーの中身だけスクロールさせる */
 .sidebar-scroll-area {
     padding: 20px;
     overflow-y: auto;
@@ -78,7 +76,6 @@ nav a:hover {
     color: var(--accent-color);
 }
 
-/* サイドバーの特別リンク（データベース） */
 .nav-special a {
     color: var(--accent-color) !important;
     border: 1px solid var(--accent-color);
@@ -175,6 +172,9 @@ nav a:hover {
     margin-top: 0;
     color: var(--accent-color);
     font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 .rule-card p {
     line-height: 1.6;
@@ -183,7 +183,6 @@ nav a:hover {
     margin-bottom: 0;
 }
 
-/* カテゴリタグ（全検索時） */
 .category-tag {
     display: inline-block;
     background: rgba(56, 189, 248, 0.2);
@@ -202,7 +201,6 @@ nav a:hover {
     opacity: 0.8;
 }
 
-/* トップページのデータベースボタン */
 .db-button {
     display: inline-block;
     margin-top: 20px;
@@ -221,13 +219,18 @@ nav a:hover {
     box-shadow: 0 0 15px var(--accent-color);
 }
 
-/* ★追加：テキスト内アイコンのスタイル */
+/* テキスト内アイコンのスタイル */
 .inline-icon {
     height: 1.1em;
     width: auto;
     vertical-align: text-bottom;
     margin: 0 1px;
     display: inline-block;
+}
+
+/* 項目名(h3)の中のアイコンを少し調整 */
+h3 .inline-icon {
+    height: 1.2em;
 }
 
 /* --- スマホ用パーツ（初期非表示） --- */
@@ -240,137 +243,23 @@ nav a:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   スマホ対応 (画面幅 768px以下)
-   ========================================= */
+/* --- スマホ対応 (画面幅 768px以下) --- */
 @media screen and (max-width: 768px) {
-    body {
-        overflow: auto;
-    }
-
-    .app-container {
-        flex-direction: column;
-        height: auto;
-        padding-top: var(--header-height);
-    }
-
-    /* スマホヘッダー */
-    .mobile-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        height: var(--header-height);
-        background: var(--sidebar-color);
-        border-bottom: 1px solid var(--border-color);
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 900;
-        box-sizing: border-box;
-    }
-    
-    #menu-toggle {
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.8rem;
-        cursor: pointer;
-    }
-
-    .mobile-logo {
-        color: var(--accent-color);
-        font-weight: bold;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-    }
-    .mobile-logo span {
-        color: #fff !important;
-    }
-
-    /* サイドバー（スライド式） */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        height: 100dvh; 
-        width: 280px;
-        transform: translateX(-100%);
-        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-        /* 内部要素を縦に並べる */
-        display: flex;
-        flex-direction: column;
-        z-index: 1001; /* ヘッダーより上に来るように */
-    }
-
-    .sidebar.active {
-        transform: translateX(0);
-    }
-
-    /* スマホ用サイドバーヘッダー */
-    .mobile-sidebar-header {
-        display: flex;
-        justify-content: flex-end; /* 右寄せ */
-        align-items: center;
-        width: 100%;
-        padding: 5px 10px;
-        box-sizing: border-box;
-        flex-shrink: 0;
-        min-height: 40px; 
-    }
-
-    /* 内部のスクロールエリア */
-    .sidebar-scroll-area {
-        padding-bottom: 80px; 
-        padding-top: 0;
-    }
-
-    .logo {
-        display: none;
-    }
-
-    /* 閉じるボタン */
-    .close-btn {
-        display: block;
-        background: transparent;
-        border: none;
-        color: var(--accent-color);
-        font-size: 2.2rem;
-        cursor: pointer;
-        padding: 5px 10px;
-        line-height: 1;
-    }
-
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(2px);
-        z-index: 950;
-    }
-    .overlay.active {
-        display: block;
-    }
-
-    /* コンテンツ調整 */
-    .content {
-        padding: 20px;
-        height: auto;
-        overflow: visible;
-    }
-
-    .content-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    #localSearchInput {
-        width: 100%;
-    }
+    body { overflow: auto; }
+    .app-container { flex-direction: column; height: auto; padding-top: var(--header-height); }
+    .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: var(--header-height); background: var(--sidebar-color); border-bottom: 1px solid var(--border-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 900; box-sizing: border-box; }
+    #menu-toggle { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; }
+    .mobile-logo { color: var(--accent-color); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+    .mobile-logo span { color: #fff !important; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; width: 280px; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; z-index: 1001; }
+    .sidebar.active { transform: translateX(0); }
+    .mobile-sidebar-header { display: flex; justify-content: flex-end; align-items: center; width: 100%; padding: 5px 10px; box-sizing: border-box; flex-shrink: 0; min-height: 40px; }
+    .sidebar-scroll-area { padding-bottom: 80px; padding-top: 0; }
+    .logo { display: none; }
+    .close-btn { display: block; background: transparent; border: none; color: var(--accent-color); font-size: 2.2rem; cursor: pointer; padding: 5px 10px; line-height: 1; }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 950; }
+    .overlay.active { display: block; }
+    .content { padding: 20px; height: auto; overflow: visible; }
+    .content-header { flex-direction: column; align-items: flex-start; }
+    #localSearchInput { width: 100%; }
 }
