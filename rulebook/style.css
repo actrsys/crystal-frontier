@@ -249,25 +249,23 @@ nav a:hover {
         box-sizing: border-box;
     }
     
-    /* スマホヘッダー内のメニューボタン */
     #menu-toggle {
         background: none;
         border: none;
-        color: #fff; /* 三本線を水色から白に変更 */
+        /* 修正：メニューボタンを白色に変更 */
+        color: #fff;
         font-size: 1.8rem;
         cursor: pointer;
     }
 
-    /* スマホ用ロゴの配色 */
     .mobile-logo {
-        color: var(--accent-color); /* 「Crystal」を水色に */
+        /* 修正：基本色を水色にし、内部のspanで白を指定するよう変更 */
+        color: var(--accent-color);
         font-weight: bold;
         letter-spacing: 1px;
-        cursor: pointer;
     }
-    
     .mobile-logo span {
-        color: #fff; /* 「Frontier」を白に */
+        color: #fff;
     }
 
     /* サイドバー（スライド式） */
@@ -299,48 +297,3 @@ nav a:hover {
         display: block;
         position: absolute;
         top: 15px;
-        /* メニュー幅(280px)と揃えることで隙間をなくす */
-        left: 280px; 
-        right: auto;
-        background: #111827; /* メニューと同じ色にして一体感を出す */
-        border: 1px solid var(--border-color);
-        border-left: none; /* 境界線を消して接続しているように見せる */
-        color: var(--accent-color);
-        font-size: 1.5rem;
-        cursor: pointer;
-        z-index: 1001;
-        padding: 5px 12px;
-        border-radius: 0 4px 4px 0; /* 右側だけ丸める */
-    }
-
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(2px);
-        z-index: 950;
-    }
-    .overlay.active {
-        display: block;
-    }
-
-    /* コンテンツ調整 */
-    .content {
-        padding: 20px;
-        height: auto;
-        overflow: visible;
-    }
-
-    .content-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    #localSearchInput {
-        width: 100%;
-    }
-}
