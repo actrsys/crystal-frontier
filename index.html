@@ -284,7 +284,7 @@
                     <label class="check-label"><input type="checkbox" id="chk-token" onchange="filterCards()"> トークン</label>
                 </div>
 
-                <label>エピック制限</label>
+                <label>エピック</label>
                 <div class="check-group" id="grp-epic">
                     <label class="check-label"><input type="checkbox" id="chk-non-epic" onchange="filterCards()"> 非エピック</label>
                     <label class="check-label"><input type="checkbox" id="chk-epic" onchange="filterCards()"> エピック</label>
@@ -330,8 +330,8 @@
                         <option value="hp">HP</option>
                     </select>
                     <select id="q-sort-dir" onchange="filterCards()" style="flex: 1; min-width: 0;">
-                        <option value="1">▲ 昇順</option>
-                        <option value="-1">▼ 降順</option>
+                        <option value="1">昇順 (▲)</option>
+                        <option value="-1">降順 (▼)</option>
                     </select>
                 </div>
                 <div style="grid-column: span 2;">
@@ -816,3 +816,4 @@
     </script>
 </body>
 </html>
+
