@@ -221,6 +221,15 @@ nav a:hover {
     box-shadow: 0 0 15px var(--accent-color);
 }
 
+/* ★追加：テキスト内アイコンのスタイル */
+.inline-icon {
+    height: 1.1em;
+    width: auto;
+    vertical-align: text-bottom;
+    margin: 0 1px;
+    display: inline-block;
+}
+
 /* --- スマホ用パーツ（初期非表示） --- */
 .mobile-header, .close-btn, .overlay {
     display: none;
@@ -300,7 +309,7 @@ nav a:hover {
         transform: translateX(0);
     }
 
-    /* ★追加：スマホ用サイドバーヘッダー（ボタン置き場） */
+    /* スマホ用サイドバーヘッダー */
     .mobile-sidebar-header {
         display: flex;
         justify-content: flex-end; /* 右寄せ */
@@ -308,28 +317,27 @@ nav a:hover {
         width: 100%;
         padding: 5px 10px;
         box-sizing: border-box;
-        flex-shrink: 0; /* 縮ませない */
-        /* ボタンと下のコンテンツが被らないように高さを確保 */
+        flex-shrink: 0;
         min-height: 40px; 
     }
 
     /* 内部のスクロールエリア */
     .sidebar-scroll-area {
-        padding-bottom: 80px; /* 下部余白 */
-        padding-top: 0; /* ヘッダーがあるので上は詰めなくて良い */
+        padding-bottom: 80px; 
+        padding-top: 0;
     }
 
     .logo {
         display: none;
     }
 
-    /* 閉じるボタン（スタイル修正） */
+    /* 閉じるボタン */
     .close-btn {
         display: block;
         background: transparent;
         border: none;
         color: var(--accent-color);
-        font-size: 2.2rem; /* 少し大きくして押しやすく */
+        font-size: 2.2rem;
         cursor: pointer;
         padding: 5px 10px;
         line-height: 1;
