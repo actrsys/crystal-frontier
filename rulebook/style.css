@@ -69,7 +69,7 @@ nav a:hover {
 .nav-special a {
     color: var(--accent-color) !important;
     border: 1px solid var(--accent-color);
-    margin-top: 15px; /* 位置変更に伴い margin-bottom から変更 */
+    margin-top: 15px;
     text-align: center;
     background: rgba(56, 189, 248, 0.1);
     font-weight: bold;
@@ -282,16 +282,19 @@ nav a:hover {
         display: none;
     }
 
+    /* 閉じるボタン (overlay内に移動したため位置調整) */
     .close-btn {
         display: block;
         position: absolute;
         top: 15px;
-        right: 15px;
+        left: 290px; /* メニュー幅280px + 10px */
+        right: auto; /* 右寄せ解除 */
         background: none;
         border: none;
         color: #fff;
         font-size: 2rem;
         cursor: pointer;
+        z-index: 1001;
     }
 
     .overlay {
