@@ -90,6 +90,10 @@
         .check-label input { display: none; } 
         .check-label:has(input:checked) { background: var(--col-blue); color: #fff; border-color: var(--col-blue); }
 
+        /* ★追加修正：トークン表示切替用の特別なスタイル */
+        .check-label.special { border-color: var(--accent); color: var(--accent); }
+        .check-label.special:has(input:checked) { background: var(--accent); color: #000; }
+
         /* スクロールエリア */
         #search-results { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #000; border: 1px solid var(--border-col); }
         #deck-list { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #000; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, var(--card-w)); gap: 12px; align-content: start; }
@@ -212,6 +216,7 @@
                     <label class="check-label"><input type="checkbox" value="フラッシュ" onchange="filterCards()"> フラッシュ</label>
                     <label class="check-label"><input type="checkbox" value="エフェクト" onchange="filterCards()"> エフェクト</label>
                     <label class="check-label"><input type="checkbox" value="オルガノン" onchange="filterCards()"> オルガノン</label>
+                    <label class="check-label special"><input type="checkbox" id="chk-token" onchange="filterCards()"> トークンを表示</label>
                 </div>
 
                 <label>色 (複数選択可)</label>
@@ -345,7 +350,6 @@
 
         // 詳細ページを新しいタブで開く関数
         function openCardDetail(name) {
-            // 日本語やスペースを含む名前をURL用にエンコード
             const url = `detail.html?name=${encodeURIComponent(name)}`;
             window.open(url, '_blank');
         }
@@ -474,12 +478,17 @@
                 const toHira = (str) => str.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
                 const rawText = name + reading + type + category + effect;
                 const searchText = (rawText + toHira(rawText)).toLowerCase();
+                
+                // ★追加：トークンフラグの自動判定（カテゴリまたはタイプにトークンが含まれる場合）
+                const isToken = category.includes("トークン") || type.includes("トークン");
+
                 MASTER_DB.push({
                     id: i, name: name, reading: reading, 
                     color: clean(cells[1]), rarity: clean(cells[2]), category: category, type: type,
                     costTotal: parseInt(clean(cells[6])) || 0,
                     atk: parseInt(clean(cells[8])) || 0, hp: parseInt(clean(cells[9])) || 0,
-                    effect: effect, fileName: fName, searchText: searchText 
+                    effect: effect, fileName: fName, searchText: searchText,
+                    isToken: isToken // 判定結果を保存
                 });
             }
             filterCards();
@@ -489,6 +498,9 @@
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked`)).map(e => e.value);
             const getNum = (id, def) => { const v = document.getElementById(id).value; return v === "" ? def : parseInt(v); };
             
+            // ★追加：トークン表示スイッチの状態取得
+            const showToken = document.getElementById('chk-token').checked;
+
             const rawText = document.getElementById('q-text').value.toLowerCase().trim();
             const keywords = rawText ? rawText.split(/[\s　]+/) : []; 
 
@@ -501,6 +513,9 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
+                // ★修正：トークン非表示ロジック（トークンかつ、表示スイッチOFFなら除外）
+                if (c.isToken && !showToken) return false;
+
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
                 if (q.cats.length > 0 && !q.cats.some(cat => c.category.includes(cat))) return false;
                 if (q.cols.length > 0 && !q.cols.some(col => c.color.includes(col))) return false;
@@ -513,14 +528,29 @@
 
             const sortKey = document.getElementById('q-sort-key').value;
             const sortDir = parseInt(document.getElementById('q-sort-dir').value);
+            
             filtered.sort((a, b) => {
+                let valA, valB;
+                
                 if (sortKey === 'name') {
-                    const valA = a.reading || a.name; const valB = b.reading || b.name;
+                    valA = a.reading || a.name; 
+                    valB = b.reading || b.name;
                     return String(valA).localeCompare(String(valB), 'ja') * sortDir;
+                } else if (sortKey === 'id') {
+                    // ★ID順は数値として比較
+                    valA = a.id; valB = b.id;
+                } else {
+                    valA = a[sortKey] || 0; 
+                    valB = b[sortKey] || 0;
                 }
-                const valA = a[sortKey] || 0; const valB = b[sortKey] || 0;
-                return (valA - valB) * sortDir;
+                
+                if (valA !== valB) {
+                    return (valA - valB) * sortDir;
+                }
+                // 同値の場合はID順（常に昇順）
+                return a.id - b.id;
             });
+
             renderResults(filtered);
         }
 
@@ -529,9 +559,8 @@
             let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
             return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
                 const cleanContent = content.trim();
-                // 属性内に埋め込むためのエスケープ処理
                 const safeMatch = match.replace(/"/g, '&quot;');
-                const safeContent = cleanContent.replace(/'/g, "\\'"); // JS用
+                const safeContent = cleanContent.replace(/'/g, "\\'");
                 return `<img src="images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
             });
         }
@@ -542,9 +571,7 @@
             const mobile = isMobile();
             
             list.forEach(c => {
-                // JS用エスケープ（シングルクォート対策）
                 const safeName = c.name.replace(/'/g, "\\'");
-                // HTML属性用エスケープ（ダブルクォート対策）
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
                 const div = document.createElement('div');
@@ -601,7 +628,6 @@
             let totalCards = 0;
             myDeck.forEach(d => {
                 totalCards += d.count;
-                // JSエスケープとHTML属性エスケープの両方適用
                 const safeName = d.name.replace(/'/g, "\\'");
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
