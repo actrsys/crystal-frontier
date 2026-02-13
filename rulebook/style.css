@@ -28,7 +28,6 @@ body {
     width: 260px;
     background-color: var(--sidebar-color);
     border-right: 1px solid var(--border-color);
-    /* padding: 20px; 削除：内部のscroll-areaに移動 */
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -36,11 +35,11 @@ body {
     z-index: 1000;
     transition: transform 0.3s ease;
     flex-shrink: 0;
-    /* overflow-y: auto; 削除：はみ出し(閉じるボタン)を表示するためvisibleに変更 */
-    overflow: visible; 
+    /* 修正：PCでも枠自体はスクロールさせない */
+    overflow: hidden; 
 }
 
-/* 追加：サイドバーの中身だけスクロールさせる */
+/* サイドバーの中身だけスクロールさせる */
 .sidebar-scroll-area {
     padding: 20px;
     overflow-y: auto;
@@ -75,7 +74,7 @@ nav a:hover {
     color: var(--accent-color);
 }
 
-/* ★追加：サイドバーの特別リンク（データベース） */
+/* サイドバーの特別リンク（データベース） */
 .nav-special a {
     color: var(--accent-color) !important;
     border: 1px solid var(--accent-color);
@@ -199,7 +198,7 @@ nav a:hover {
     opacity: 0.8;
 }
 
-/* ★追加：トップページのデータベースボタン */
+/* トップページのデータベースボタン */
 .db-button {
     display: inline-block;
     margin-top: 20px;
@@ -271,11 +270,9 @@ nav a:hover {
         color: var(--accent-color);
         font-weight: bold;
         letter-spacing: 1px;
-        /* 修正：全て大文字に変換 */
         text-transform: uppercase;
     }
     .mobile-logo span {
-        /* 修正：色指定を強制適用 */
         color: #fff !important;
     }
 
@@ -289,8 +286,8 @@ nav a:hover {
         width: 280px;
         transform: translateX(-100%);
         box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-        /* padding-bottom等は sidebar-scroll-area に任せるので削除 */
-        overflow: visible; /* 重要：ボタンを外にはみ出させるためvisible */
+        /* 修正：ボタンを内側に入れるため visible は不要 */
+        /* overflow: hidden; (PCの設定を継承) */
     }
 
     .sidebar.active {
@@ -300,30 +297,26 @@ nav a:hover {
     /* 内部のスクロールエリア */
     .sidebar-scroll-area {
         padding-bottom: 80px; /* 下部余白 */
+        padding-top: 10px; /* ボタンとの間隔 */
     }
 
     .logo {
         display: none;
     }
 
-    /* 閉じるボタン（HTML構造変更に対応） */
+    /* 閉じるボタン（スタイル修正） */
     .close-btn {
         display: block;
-        position: absolute;
-        top: 15px;
-        /* 修正：サイドバーの右端（外側）に配置 */
-        left: 100%; 
-        background: #111827; 
-        border: 1px solid var(--border-color);
-        border-left: none; 
+        /* absolute配置をやめ、Flexボックス内で配置する */
+        position: static; 
+        align-self: flex-end; /* 右寄せ */
+        background: transparent;
+        border: none;
         color: var(--accent-color);
-        font-size: 1.5rem;
+        font-size: 2rem;
         cursor: pointer;
-        z-index: 1002;
-        padding: 5px 12px;
-        border-radius: 0 4px 4px 0; 
-        /* 1pxのズレを防ぐための調整 */
-        margin-left: 0; 
+        padding: 10px 20px;
+        flex-shrink: 0; /* 潰れないようにする */
     }
 
     .overlay {
