@@ -85,7 +85,11 @@
         }
         
         /* 検索・フィルター部分 */
-        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px; background: var(--bg-panel); padding: 8px; border-radius: 6px; border: 1px solid var(--border-col); }
+        .filter-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4px; 
+            margin-bottom: 8px; background: var(--bg-panel); 
+            padding: 8px; border-radius: 6px; border: 1px solid var(--border-col); 
+        }
         .filter-grid label { grid-column: span 2; font-size: 10px; color: var(--accent); margin-top: 2px; font-weight: bold; }
         input, select, textarea { background: var(--bg-main); color: #fff; border: 1px solid var(--border-col); padding: 4px 8px; border-radius: 4px; font-size: 12px; height: 26px; box-sizing: border-box; }
         textarea { width: 100%; height: 80px; resize: none; margin-bottom: 10px; }
@@ -177,14 +181,11 @@
             :root { --card-w: var(--card-w-mob); --card-h: var(--card-h-mob); }
             .play-card { width: var(--card-w-mob); height: var(--card-h-mob); }
             
-            /* ★修正: スマホ表示の高さ計算ロジックを変更 */
             .screen { 
                 flex-direction: column; 
-                /* height: calc(100dvh - 50px); ←削除（固定だと上部メニュー分ずれるため） */
                 height: auto;
                 flex-grow: 1; /* 残りのスペースを埋める */
-                
-                /* ★重要: 下部固定メニュー（50px）＋iPhoneのセーフエリア分の余白を内側に確保 */
+                /* 下部固定メニュー（50px）＋iPhoneのセーフエリア分の余白を内側に確保 */
                 padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
                 width: 100%;
             }
@@ -193,7 +194,17 @@
             .left-pane.active-pane, .right-pane.active-pane { display: flex; }
             .gutter { display: none !important; }
 
-            #advanced-filters { display: none; border-top: none; margin-top: -5px; }
+            /* ★修正: 詳細条件フィルターのスクロール設定 */
+            #advanced-filters { 
+                display: none; 
+                border-top: none; 
+                margin-top: -5px;
+                /* 画面高さの55%程度を上限にし、それ以上は内部スクロールさせる */
+                max-height: 55vh; 
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch; /* 滑らかスクロール */
+            }
+
             #filter-toggle-btn { display: block; width: 100%; padding: 8px; margin-bottom: 5px; background: #21262d; border: 1px solid var(--border-col); color: var(--text-sub); cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 4px; }
 
             .btn-add { width: 40px; font-size: 24px; align-self: stretch; display: flex; align-items: center; justify-content: center; margin-left: 2px; flex-shrink: 0; }
@@ -205,78 +216,30 @@
             .nav-btn.active { background: var(--col-blue); color: #fff; font-size: 15px; }
             .nav-badge { margin-left: 6px; min-width: 18px; height: 18px; background: #fff; color: #000; border-radius: 99px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 2001; }
         }
-        /* === ここから：上部ナビゲーションバーのスタイル === */
+        
+        /* 上部ナビゲーションバー */
         .global-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #1a1a1a; /* ヘッダーより少し暗い色 */
-            padding: 10px 20px;
-            border-bottom: 1px solid #333;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #e0e0e0;
-            flex-shrink: 0; /* ★追加: 画面が狭くなっても潰れないようにする */
-            /* position: sticky; top: 0; z-index: 2000; */
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #1a1a1a; padding: 10px 20px;
+            border-bottom: 1px solid #333; font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #e0e0e0; flex-shrink: 0;
         }
-        
-        /* ★修正：クリック可能にし、色を分ける */
-        .nav-brand {
-            font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            color: #38bdf8; /* Crystalの色（水色） */
-            cursor: pointer; /* クリックできることがわかるように指カーソルにする */
-        }
-        
-        /* ★修正：後半の文字を白くする */
-        .nav-brand span {
-            color: #fff;
-        }
-        
+        .nav-brand { font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; color: #38bdf8; cursor: pointer; }
+        .nav-brand span { color: #fff; }
         .nav-links a {
-            color: #e0e0e0;
-            text-decoration: none;
-            font-size: 0.95rem;
-            padding: 6px 12px;
-            border-radius: 4px;
-            transition: background 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid #444;
-            /* ★修正：スマホで2行にならないようにする */
-            white-space: nowrap;
-            flex-shrink: 0;
+            color: #e0e0e0; text-decoration: none; font-size: 0.95rem; padding: 6px 12px;
+            border-radius: 4px; transition: background 0.3s; display: inline-flex;
+            align-items: center; gap: 6px; background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444; white-space: nowrap; flex-shrink: 0;
         }
+        .nav-links a:hover { background-color: rgba(56, 189, 248, 0.2); color: #fff; border-color: #38bdf8; }
         
-        .nav-links a:hover {
-            background-color: rgba(56, 189, 248, 0.2);
-            color: #fff;
-            border-color: #38bdf8;
-        }
-        
-        /* スマホ対応 (画面幅 600px以下) */
         @media (max-width: 600px) {
-            .global-nav {
-                padding: 8px 12px;
-            }
-            .nav-brand {
-                font-size: 0.9rem;
-            }
-            .nav-links a {
-                font-size: 0.8rem;
-                padding: 4px 8px;
-            }
+            .global-nav { padding: 8px 12px; }
+            .nav-brand { font-size: 0.9rem; }
+            .nav-links a { font-size: 0.8rem; padding: 4px 8px; }
         }
-        /* === ここまで：上部ナビゲーションバーのスタイル === */
-
-        /* ★追加：target="_blank" があるリンクの後ろに矢印を自動で付ける */
-        a[target="_blank"]::after {
-            content: " ↗";
-            font-weight: bold;
-            margin-left: 2px;
-        }
+        a[target="_blank"]::after { content: " ↗"; font-weight: bold; margin-left: 2px; }
     </style>
 </head>
 <body>
@@ -339,29 +302,30 @@
                 
                 <label>レアリティ (複数選択可)</label>
                 <div class="check-group" id="grp-rare">
-                    <label class="check-label"><input type="checkbox" value="コモン" onchange="filterCards()"> C</label>
-                    <label class="check-label"><input type="checkbox" value="アンコモン" onchange="filterCards()"> UC</label>
-                    <label class="check-label"><input type="checkbox" value="レア" onchange="filterCards()"> R</label>
-                    <label class="check-label"><input type="checkbox" value="レジェンド" onchange="filterCards()"> L</label>
+                    <label class="check-label"><input type="checkbox" value="コモン" onchange="filterCards()">コモン</label>
+                    <label class="check-label"><input type="checkbox" value="アンコモン" onchange="filterCards()">アンコモン</label>
+                    <label class="check-label"><input type="checkbox" value="レア" onchange="filterCards()">レア</label>
+                    <label class="check-label"><input type="checkbox" value="レジェンド" onchange="filterCards()">レジェンド</label>
                 </div>
                 
                 <label>ATK / HP</label>
                 <div class="range-box"><input type="number" id="q-atk-min" placeholder="0" oninput="filterCards()"><span>~</span><input type="number" id="q-atk-max" placeholder="∞" oninput="filterCards()"></div>
                 <div class="range-box"><input type="number" id="q-hp-min" placeholder="0" oninput="filterCards()"><span>~</span><input type="number" id="q-hp-max" placeholder="∞" oninput="filterCards()"></div>
                 
-                <label>並び替え</label>
-                <div style="grid-column: span 2; display: flex; gap: 5px;">
-                    <select id="q-sort-key" onchange="filterCards()" style="flex: 2;">
-                        <option value="id">ID (登録順)</option>
-                        <option value="name">名前 (あいうえお順)</option>
+                <label>並び替え / リセット</label>
+                <div style="grid-column: span 2; display: flex; gap: 5px; align-items: center;">
+                    <select id="q-sort-key" onchange="filterCards()" style="flex: 1; min-width: 0;">
+                        <option value="id">ID</option>
+                        <option value="name">名前</option>
                         <option value="costTotal">コスト</option>
-                        <option value="atk">ATK (攻撃力)</option>
-                        <option value="hp">HP (体力)</option>
+                        <option value="atk">ATK</option>
+                        <option value="hp">HP</option>
                     </select>
-                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 1;">
-                        <option value="1">昇順 (▲)</option>
-                        <option value="-1">降順 (▼)</option>
+                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 0 0 50px; min-width: 50px;">
+                        <option value="1">▲</option>
+                        <option value="-1">▼</option>
                     </select>
+                    <button class="btn btn-red" onclick="resetSearch()" style="white-space: nowrap;">↺ Reset</button>
                 </div>
             </div>
             
@@ -494,6 +458,27 @@
             }
         }
 
+        /* ★追加: 検索条件をリセットする関数 */
+        function resetSearch() {
+            // テキストボックスクリア
+            document.getElementById('q-text').value = '';
+            
+            // チェックボックスを全て外す (詳細条件内)
+            const checks = document.querySelectorAll('#advanced-filters input[type="checkbox"]');
+            checks.forEach(c => c.checked = false);
+            
+            // 数値入力エリアをクリア
+            const nums = document.querySelectorAll('#advanced-filters input[type="number"]');
+            nums.forEach(n => n.value = '');
+            
+            // ソートをID順に戻す（必要に応じて）
+            document.getElementById('q-sort-key').value = 'id';
+            document.getElementById('q-sort-dir').value = '1';
+            
+            // フィルタ実行
+            filterCards();
+        }
+
         function setupResizer(leftId, gutterId) {
             const leftPane = document.getElementById(leftId);
             const gutter = document.getElementById(gutterId);
@@ -613,10 +598,8 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
-                // 1. 基本的なトークン非表示ルール
                 if (c.isToken && !showToken) return false;
 
-                // 2. フィルタリング動作
                 if (q.cats.length > 0 || showToken) {
                     let matchCat = false;
                     
@@ -704,10 +687,7 @@
                     subInfoHtml = `<span class="info-scroll-area">${infoParts.join(" | ")}</span>`;
                 }
 
-                // ★修正: トークンの場合は画像クリックでのデッキ追加を無効化する（空文字にする）
                 const imgClickAction = (mobile || c.isToken) ? "" : `onclick="addToDeck('${safeNameAttr}')"`;
-                
-                // ★修正: トークンの場合は追加ボタンを表示しない
                 const addBtn = c.isToken ? "" : `<button class="btn btn-green btn-add" onclick="addToDeck('${safeNameAttr}')">+</button>`;
                 
                 div.innerHTML = `
@@ -731,7 +711,6 @@
         function addToDeck(name) {
             const master = MASTER_DB.find(d => d.name === name);
             if (!master) return;
-            // ★修正: 万が一トークンが呼ばれてもデッキに入れない
             if (master.isToken) return;
 
             const inDeck = myDeck.find(d => d.name === name);
@@ -750,7 +729,6 @@
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
                 const div = document.createElement('div'); div.className = 'deck-item';
-                // デッキ内のトークン対応（通常ありえないが念のため）
                 const imgAction = (mobile || d.isToken) ? "" : `onclick="addToDeck('${safeNameAttr}')" oncontextmenu="event.preventDefault(); removeFromDeck('${safeNameAttr}')"`;
                 
                 const deckControls = `
@@ -792,7 +770,6 @@
                 let match = line.match(/^(.+?)\s*[x×*]\s*(\d+)$/);
                 let name = match ? match[1].trim() : line.trim(); let count = match ? parseInt(match[2]) : 1;
                 let master = MASTER_DB.find(m => m.name === name);
-                // トークンは手動入力でも弾く
                 if (master && !master.isToken) myDeck.push({...master, count: Math.min(count, CONFIG.maxCardsInDeck)});
             });
             renderDeck();
