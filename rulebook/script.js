@@ -34,21 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if(menuClose) menuClose.addEventListener('click', closeSidebar);
     if(overlay) overlay.addEventListener('click', closeSidebar);
     
-    // HTML内のonclickから呼べるようにする
     window.closeMenu = closeSidebar;
-
-    // 初回ロード時にホーム画面を表示
     resetHome();
 });
 
 // --- ページ切り替え機能 ---
 function loadPage(fileName, title) {
-    // UIのリセット
     document.getElementById('page-title').innerText = title;
     const localInput = document.getElementById('localSearchInput');
     if(localInput) {
-        localInput.value = ''; // ページ内検索クリア
-        localInput.style.display = 'inline-block'; // ページ内検索を表示
+        localInput.value = '';
+        localInput.style.display = 'inline-block';
     }
     
     const container = document.getElementById('data-container');
@@ -72,26 +68,23 @@ function loadPage(fileName, title) {
 function resetHome() {
     document.getElementById('page-title').innerText = 'Welcome to Adamaster\'s Guide';
     const localInput = document.getElementById('localSearchInput');
-    if(localInput) localInput.style.display = 'none'; // ホームではページ内検索を隠す
+    if(localInput) localInput.style.display = 'none';
     
     const container = document.getElementById('data-container');
-    // ★ボタンを追加した初期画面
     container.innerHTML = `
         <div class="welcome-msg">
             <h3>クリスタル・フロンティア ルールブックへようこそ</h3>
             <p>左のメニューから項目を選択するか、サイドバーからキーワードを全検索してください。</p>
-            
             <br>
             <a href="https://crystalfrontier.github.io/cf-builder/" target="_blank" class="db-button">
                 カードデータベースを開く ↗
             </a>
         </div>
     `;
-    
     window.closeMenu();
 }
 
-// --- ページ内検索（フィルタリング） ---
+// --- ページ内検索 ---
 function filterLocalContent() {
     const query = document.getElementById('localSearchInput').value.toLowerCase();
     const cards = document.querySelectorAll('.rule-card');
@@ -102,11 +95,8 @@ function filterLocalContent() {
     });
 }
 
-// --- 全ファイル検索機能 ---
 function handleGlobalSearch(event) {
-    if (event.key === 'Enter') {
-        executeGlobalSearch();
-    }
+    if (event.key === 'Enter') executeGlobalSearch();
 }
 
 function executeGlobalSearch() {
@@ -114,7 +104,6 @@ function executeGlobalSearch() {
     if (!query) return;
 
     window.closeMenu();
-
     const container = document.getElementById('data-container');
     const titleEl = document.getElementById('page-title');
     const localInput = document.getElementById('localSearchInput');
@@ -130,7 +119,6 @@ function executeGlobalSearch() {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    // データにカテゴリ名を付与
                     const labeledData = results.data.map(row => ({
                         ...row,
                         _categoryName: item.name
@@ -144,15 +132,11 @@ function executeGlobalSearch() {
 
     Promise.all(promises).then(allFilesData => {
         const flatData = allFilesData.flat();
-
         const filtered = flatData.filter(item => {
-            // 検索対象のカラム
             const name = item['種類・領域'] || item['項目名'] || item['用語名'] || item['能力語'] || item['能力名'] || item['処理名'] || item['カウンター名'] || '';
             const desc = item['解説'] || item['ルール内容'] || '';
-            
             return name.toLowerCase().includes(query) || desc.toLowerCase().includes(query);
         });
-
         renderData(filtered, true);
     });
 }
@@ -162,10 +146,15 @@ function executeGlobalSearch() {
  */
 function formatEffect(text) {
     if (!text) return "";
-    // 全角括弧を半角に統一
-    let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
-    // 括弧内（1〜15文字）を画像タグに置換
-    // main/rulebook/ から見て main/images/icons/ なのでパスは ../images/icons/
+
+    // 1. 全角の括弧および英数字を半角に変換 (Ｘ → X, （ → ( 等)
+    // ファイル名が X.png など半角の場合でも確実にマッチさせるためです
+    let normalized = text.replace(/[！-～]/g, s => {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+
+    // 2. 括弧内（1〜15文字）を画像タグに置換
+    // 隣接する (X)(赤) も /g フラグにより全て置換されます
     return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
         const cleanContent = content.trim();
         const safeMatch = match.replace(/"/g, '&quot;');
@@ -184,24 +173,23 @@ function renderData(data, showCategory = false) {
     }
 
     data.forEach(item => {
-        const name = item['種類・領域'] || item['項目名'] || item['用語名'] || item['能力語'] || item['能力名'] || item['処理名'] || item['カウンター名'];
-        const desc = item['解説'] || item['ルール内容'];
+        // 各CSVのカラム名に対応した項目名と解説を取得
+        const rawName = item['種類・領域'] || item['項目名'] || item['用語名'] || item['能力語'] || item['能力名'] || item['処理名'] || item['カウンター名'];
+        const rawDesc = item['解説'] || item['ルール内容'];
         
-        // 項目名か解説のどちらかがあれば表示
-        if (name || desc) {
+        if (rawName || rawDesc) {
             const card = document.createElement('div');
             card.className = 'rule-card';
             
-            // カテゴリタグ（全検索時）
             const categoryHtml = showCategory && item._categoryName 
                 ? `<span class="category-tag">${item._categoryName}</span>` 
                 : '';
 
-            // 見出し
-            const titleHtml = name ? `<h3>${name}</h3>` : '';
+            // 項目名(見出し)にも formatEffect を適用
+            const titleHtml = rawName ? `<h3>${formatEffect(rawName)}</h3>` : '';
             
-            // 本文（ここで formatEffect を適用してアイコン化する）
-            const descHtml = desc ? `<p>${formatEffect(desc)}</p>` : '';
+            // 本文にも formatEffect を適用
+            const descHtml = rawDesc ? `<p>${formatEffect(rawDesc)}</p>` : '';
 
             card.innerHTML = `
                 ${categoryHtml}
