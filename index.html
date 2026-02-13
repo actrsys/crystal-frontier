@@ -25,12 +25,19 @@
         body { 
             font-family: "Helvetica Neue", Arial, sans-serif; 
             background: var(--bg); color: var(--text); 
-            margin: 0; overflow: hidden; font-size: 13px;
+            margin: 0; padding: 0; overflow: hidden; font-size: 13px;
             touch-action: manipulation; 
+            width: 100%;
+            height: 100dvh; /* 動的ビューポート高さ */
         }
         
         /* レイアウト */
-        .screen { display: none; height: 100vh; width: 100%; flex-direction: row; }
+        .screen { 
+            display: none; 
+            height: 100dvh; /* 修正: スマホのアドレスバー考慮 */
+            width: 100%; 
+            flex-direction: row; 
+        }
         .active { display: flex; }
         
         /* 左パネル */
@@ -206,13 +213,19 @@
             }
             .play-card { width: 75px; height: 105px; }
 
-            .screen { flex-direction: column; height: calc(100vh - 50px); }
+            /* 修正: dvh単位を適用し、画面外への突き抜けを防止 */
+            .screen { 
+                flex-direction: column; 
+                height: calc(100dvh - 50px); 
+            }
             
-            /* ★修正：スマホで上部の文字が途切れないよう padding-top を追加 */
+            /* 修正: padding-top のフォールバックとセーフエリアを統合 */
             .left-pane, .right-pane { 
-                width: 100% !important; max-width: 100% !important; height: 100%; display: none; 
-                padding: 10px 5px 5px 5px;
-                padding-top: env(safe-area-inset-top, 10px); 
+                width: 100% !important; max-width: 100% !important; 
+                height: 100%; 
+                display: none; 
+                padding: 15px 5px 5px 5px; /* 上部パディングを少し増やしてフォールバック */
+                padding-top: calc(10px + env(safe-area-inset-top, 0px)); 
                 box-sizing: border-box;
             }
             .left-pane.active-pane, .right-pane.active-pane { display: flex; }
@@ -225,20 +238,14 @@
                 cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 4px;
             }
 
-            /* ★修正：＋ボタンをスマホ向けに縦長・大きく調整 */
             .btn-add {
-                width: 46px;
-                font-size: 24px;
-                align-self: stretch; /* カードの行の高さに合わせて縦に伸ばす */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-left: 2px;
+                width: 46px; font-size: 24px; align-self: stretch;
+                display: flex; align-items: center; justify-content: center; margin-left: 2px;
             }
 
             #hover-preview { 
                 display: none; 
-                width: 100vw !important; height: 100vh !important; 
+                width: 100vw !important; height: 100dvh !important; 
                 top: 0 !important; left: 0 !important; border: none; border-radius: 0;
                 transform: none; pointer-events: auto !important;
                 background: rgba(0,0,0,0.85);
@@ -249,7 +256,7 @@
             #mobile-nav {
                 display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
                 background: #161b22; border-top: 1px solid #30363d; z-index: 2000;
-                padding-bottom: env(safe-area-inset-bottom); /* iPhone等の下部バー考慮 */
+                padding-bottom: env(safe-area-inset-bottom, 0px); 
             }
             .nav-btn {
                 flex: 1; border: none; background: none; color: #8b949e; font-weight: bold;
@@ -306,7 +313,7 @@
                 </div>
 
                 <label>コスト</label>
-                <div class="range-box"><input type="number" id="q-cost-min" placeholder="0" oninput="filterCards()"><span>~</span><input type="number" id="q-cost-max" placeholder="∞" oninput="filterCards()"></div>
+                <div class="range-box"><input type="number" id="q-cost-min" placeholder="0" oninput="filterCards()"><span>~</span><input type="number" id="q-cost-min" placeholder="∞" oninput="filterCards()"></div>
                 
                 <label>レアリティ (複数選択可)</label>
                 <div class="check-group" id="grp-rare">
@@ -567,7 +574,7 @@
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
                 if (c.atk < q.aMin || c.atk > q.aMax) return false;
-                if (c.hp < q.hMin || c.hp > q.hMax) return false;
+                if (c.hp < q.hMin || c.hp > q.hp-max) return false;
                 return true;
             });
             const sortKey = document.getElementById('q-sort-key').value;
