@@ -6,32 +6,55 @@
     <meta name="format-detection" content="telephone=no">
     <title>デッキビルダー | クリフロ-Crystal Frontier-</title>
     <style>
-        /* =========================================
-           ★カスタマイズエリア (見た目の設定)
-           ========================================= */
+        /* ==========================================================================
+           ★ サイト設定・カスタマイズエリア (ここを変更してデザインを調整できます)
+           ========================================================================== */
         :root {
-            --card-w: 110px;
-            --card-h: 154px;
-            --bg: #0d1117;
-            --panel: #161b22;
-            --accent: #f1c40f; /* 金色 */
-            --text: #c9d1d9;
-            --border: #30363d;
-            --green: #238636;
-            --red: #f85149;
-            --blue: #1f6feb;
+            /* ---【1. カードサイズ設定】--- */
+            --card-w-pc: 110px;      /* PC表示時のカード幅 */
+            --card-h-pc: 154px;      /* PC表示時のカード高さ */
+            
+            --card-w-mob: 75px;      /* スマホ表示時のカード幅 */
+            --card-h-mob: 105px;     /* スマホ表示時のカード高さ */
+
+            /* ---【2. 配色設定】--- */
+            --bg-main: #0d1117;      /* 画面全体の背景色 (ダークモード系) */
+            --bg-panel: #161b22;     /* 左サイドバーやカード行の背景色 */
+            --text-main: #c9d1d9;    /* メインの文字色 */
+            --text-sub: #8b949e;     /* 補足情報の文字色 (薄いグレー) */
+            --border-col: #30363d;   /* 枠線の色 */
+
+            /* ---【3. アクセントカラー・ボタン色】--- */
+            --accent: #f1c40f;       /* 強調色 (アイコンやドラッグバーなど) */
+            --col-blue: #1f6feb;     /* 青ボタン (保存・読込・選択中など) */
+            --col-green: #238636;    /* 緑ボタン (追加・決定など) */
+            --col-red: #f85149;      /* 赤ボタン (削除・クリアなど) */
+            
+            /* ---【4. その他】--- */
+            --font-base: "Helvetica Neue", Arial, sans-serif; /* フォント設定 */
+            --scroll-bar-w: 8px;     /* スクロールバーの太さ */
         }
+
+        /* =========================================
+           以下、システムスタイル (変更非推奨)
+           ========================================= */
 
         /* 全体設定 */
         body { 
-            font-family: "Helvetica Neue", Arial, sans-serif; 
-            background: var(--bg); color: var(--text); 
+            font-family: var(--font-base); 
+            background: var(--bg-main); color: var(--text-main); 
             margin: 0; padding: 0; overflow: hidden; font-size: 13px;
             touch-action: manipulation; 
             width: 100%;
             height: 100dvh;
         }
         
+        /* 変数の適用ロジック */
+        :root {
+            --card-w: var(--card-w-pc);
+            --card-h: var(--card-h-pc);
+        }
+
         /* レイアウト */
         .screen { 
             display: none; 
@@ -52,6 +75,7 @@
             flex-direction: column; 
             box-sizing: border-box; 
             flex-shrink: 0; 
+            background: var(--bg-panel);
         }
 
         /* 仕切り線 */
@@ -59,8 +83,8 @@
             width: 8px;
             background: #21262d;
             cursor: col-resize;
-            border-left: 1px solid var(--border);
-            border-right: 1px solid var(--border);
+            border-left: 1px solid var(--border-col);
+            border-right: 1px solid var(--border-col);
             transition: background 0.2s;
             flex-shrink: 0;
             z-index: 100;
@@ -79,13 +103,13 @@
             display: flex; 
             flex-direction: column; 
             box-sizing: border-box; 
-            background: #0d1117; 
+            background: var(--bg-main); 
         }
         
         /* 検索・フィルター部分 */
-        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px; background: var(--panel); padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px; background: var(--bg-panel); padding: 8px; border-radius: 6px; border: 1px solid var(--border-col); }
         .filter-grid label { grid-column: span 2; font-size: 10px; color: var(--accent); margin-top: 2px; font-weight: bold; }
-        input, select, textarea { background: #0d1117; color: #fff; border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 12px; height: 26px; box-sizing: border-box; }
+        input, select, textarea { background: var(--bg-main); color: #fff; border: 1px solid var(--border-col); padding: 4px 8px; border-radius: 4px; font-size: 12px; height: 26px; box-sizing: border-box; }
         textarea { width: 100%; height: 80px; resize: none; margin-bottom: 10px; }
         .range-box { display: flex; align-items: center; gap: 3px; }
         .range-box input { width: 100%; }
@@ -94,17 +118,17 @@
         .check-group { display: flex; flex-wrap: wrap; gap: 4px; grid-column: span 2; margin-bottom: 4px; }
         .check-label {
             display: inline-block; cursor: pointer; font-size: 11px;
-            background: #21262d; border: 1px solid var(--border);
-            padding: 3px 8px; border-radius: 4px; color: var(--text); user-select: none; transition: 0.2s;
+            background: #21262d; border: 1px solid var(--border-col);
+            padding: 3px 8px; border-radius: 4px; color: var(--text-main); user-select: none; transition: 0.2s;
             touch-action: manipulation;
         }
         .check-label input { display: none; } 
-        .check-label:has(input:checked) { background: var(--blue); color: #fff; border-color: var(--blue); }
+        .check-label:has(input:checked) { background: var(--col-blue); color: #fff; border-color: var(--col-blue); }
 
         /* スクロールエリア */
         #search-results { 
             flex-grow: 1; overflow-y: auto; overflow-x: hidden; 
-            background: #000; border: 1px solid var(--border); 
+            background: #000; border: 1px solid var(--border-col); 
         }
         #deck-list { 
             flex-grow: 1; overflow-y: auto; overflow-x: hidden; 
@@ -116,7 +140,7 @@
         #play-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #0a2012; border-radius: 8px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 10px; padding: 20px; }
 
         /* カード一覧のレイアウト */
-        .card-row { display: flex; padding: 6px; border-bottom: 1px solid var(--border); gap: 8px; background: #161b22; align-items: flex-start; }
+        .card-row { display: flex; padding: 6px; border-bottom: 1px solid var(--border-col); gap: 8px; background: var(--bg-panel); align-items: flex-start; }
         .card-row:hover { background: #21262d; }
         
         .img-box { width: 50px; height: 70px; background: #222; border: 1px solid #444; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
@@ -136,7 +160,7 @@
         
         /* 属性・数値エリア全体 */
         .card-sub { 
-            font-size: 11px; color: #8b949e; 
+            font-size: 11px; color: var(--text-sub); 
             display: flex; align-items: center; 
             width: 100%; overflow: hidden; 
         }
@@ -159,7 +183,7 @@
         .card-effect {
             font-size: 11px; color: #ccc; line-height: 1.4;
             background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px;
-            max-height: 48px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #30363d;
+            max-height: 48px; overflow-y: auto; white-space: pre-wrap; border: 1px solid var(--border-col);
         }
         .card-effect::-webkit-scrollbar { width: 4px; }
         .card-effect::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
@@ -169,7 +193,7 @@
         /* 検索結果の追加ボタン */
         .btn-add { 
             height: 100%; align-self: center; touch-action: manipulation; 
-            flex-shrink: 0; /* 横幅を勝手に縮めさせない */
+            flex-shrink: 0; 
         }
 
         /* デッキ内カードのコントロール */
@@ -179,7 +203,7 @@
             border: 1px solid #fff; border-radius: 4px; object-fit: cover; transition: 0.1s;
             touch-action: manipulation;
         }
-        .badge { position: absolute; top: -6px; right: -6px; background: var(--red); color: #fff; width: 22px; height: 22px; line-height: 22px; border-radius: 50%; font-weight: bold; text-align: center; border: 2px solid #fff; z-index: 10; font-size: 11px; pointer-events: none; }
+        .badge { position: absolute; top: -6px; right: -6px; background: var(--col-red); color: #fff; width: 22px; height: 22px; line-height: 22px; border-radius: 50%; font-weight: bold; text-align: center; border: 2px solid #fff; z-index: 10; font-size: 11px; pointer-events: none; }
         
         /* PC/スマホ共通：画像下のボタン */
         .deck-controls {
@@ -211,7 +235,7 @@
         }
         
         .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #fff; font-size: 12px; touch-action: manipulation; }
-        .btn-green { background: var(--green); } .btn-blue { background: var(--blue); } .btn-accent { background: var(--accent); color: #000; } .btn-red { background: var(--red); }
+        .btn-green { background: var(--col-green); } .btn-blue { background: var(--col-blue); } .btn-accent { background: var(--accent); color: #000; } .btn-red { background: var(--col-red); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         @keyframes drawAnim { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -226,10 +250,11 @@
             .pc-only-text { display: none !important; }
 
             :root {
-                --card-w: 75px;  
-                --card-h: 105px;
+                /* スマホ用のサイズ変数を適用 */
+                --card-w: var(--card-w-mob);  
+                --card-h: var(--card-h-mob);
             }
-            .play-card { width: 75px; height: 105px; }
+            .play-card { width: var(--card-w-mob); height: var(--card-h-mob); }
 
             .screen { 
                 flex-direction: column; 
@@ -250,12 +275,12 @@
             #advanced-filters { display: none; border-top: none; margin-top: -5px; }
             #filter-toggle-btn {
                 display: block; width: 100%; padding: 8px; margin-bottom: 5px;
-                background: #21262d; border: 1px solid #30363d; color: #8b949e;
+                background: #21262d; border: 1px solid var(--border-col); color: var(--text-sub);
                 cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 4px;
             }
 
             .btn-add {
-                width: 40px; /* 横幅を少し抑える */
+                width: 40px; 
                 font-size: 24px; align-self: stretch;
                 display: flex; align-items: center; justify-content: center; margin-left: 2px;
                 flex-shrink: 0;
@@ -273,19 +298,40 @@
             
             #mobile-nav {
                 display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
-                background: #161b22; border-top: 1px solid #30363d; z-index: 2000;
+                background: var(--bg-panel); border-top: 1px solid var(--border-col); z-index: 2000;
                 padding-bottom: env(safe-area-inset-bottom, 0px); 
             }
             .nav-btn {
-                flex: 1; border: none; background: none; color: #8b949e; font-weight: bold;
-                cursor: pointer; border-right: 1px solid #30363d; font-size: 13px;
+                flex: 1; border: none; background: none; color: var(--text-sub); font-weight: bold;
+                cursor: pointer; border-right: 1px solid var(--border-col); font-size: 13px;
                 touch-action: manipulation;
                 display: flex; align-items: center; justify-content: center;
                 text-align: center; transition: all 0.2s ease;
+                position: relative; /* バッジの配置用 */
             }
             .nav-btn.active { 
-                background: #1f6feb; color: #fff; 
-                font-size: 15px; /* アクティブ時に少し大きく */
+                background: var(--col-blue); color: #fff; 
+                font-size: 15px;
+            }
+            
+            /* デッキ枚数バッジ */
+            .nav-badge {
+                position: absolute;
+                top: 4px;
+                right: 25%; /* ボタンの中心より少し右 */
+                min-width: 18px;
+                height: 18px;
+                background: #fff;
+                color: #000;
+                border-radius: 99px;
+                font-size: 10px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+                z-index: 2001;
             }
         }
     </style>
@@ -413,8 +459,13 @@
     </div>
 
     <div id="mobile-nav">
-        <button class="nav-btn active" id="btn-search" onclick="showMobilePane('left')">🔍 検索 / 設定</button>
-        <button class="nav-btn" id="btn-deck" onclick="showMobilePane('right')">🃏 デッキ / プレイ</button>
+        <button class="nav-btn active" id="btn-search" onclick="showMobilePane('left')">
+            <span id="nav-text-l">🔍 検索</span>
+        </button>
+        <button class="nav-btn" id="btn-deck" onclick="showMobilePane('right')">
+            <span id="nav-text-r">🃏 デッキ</span>
+            <span id="nav-badge" class="nav-badge" style="display:none;">0</span>
+        </button>
     </div>
 
     <script>
@@ -431,6 +482,9 @@
         window.addEventListener('DOMContentLoaded', () => {
             setupResizer('pane-l-build', 'gutter-build');
             setupResizer('pane-l-mulligan', 'gutter-mulligan');
+            
+            // 初期状態はBuilderモードなので、ラベルをセット
+            updateMobileNavLabels('builder');
             showMobilePane('left'); 
 
             fetch('card_list.csv')
@@ -445,6 +499,21 @@
                 });
         });
 
+        // モバイルナビのラベル更新機能
+        function updateMobileNavLabels(mode) {
+            const txtL = document.getElementById('nav-text-l');
+            const txtR = document.getElementById('nav-text-r');
+            if (!txtL || !txtR) return;
+
+            if (mode === 'builder') {
+                txtL.textContent = '🔍 検索・条件';
+                txtR.textContent = '🃏 構築・リスト';
+            } else if (mode === 'mulligan') {
+                txtL.textContent = '⚙ 設定・入力';
+                txtR.textContent = '▶ 試行エリア';
+            }
+        }
+
         function showMobilePane(side) {
             const activeScreen = document.querySelector('.screen.active');
             if (!activeScreen) return;
@@ -452,6 +521,7 @@
             const right = activeScreen.querySelector('.right-pane');
             const btnSearch = document.getElementById('btn-search');
             const btnDeck = document.getElementById('btn-deck');
+            
             if (side === 'left') {
                 left.classList.add('active-pane'); right.classList.remove('active-pane');
                 btnSearch.classList.add('active'); btnDeck.classList.remove('active');
@@ -683,7 +753,10 @@
         function renderDeck() {
             const area = document.getElementById('deck-list'); area.innerHTML = '';
             const mobile = isMobile();
+            let totalCards = 0;
+
             myDeck.forEach(d => {
+                totalCards += d.count;
                 const safeName = d.name.replace(/'/g, "\\'");
                 const div = document.createElement('div'); div.className = 'deck-item';
                 
@@ -704,7 +777,16 @@
                 enablePreview(div.querySelector('img'), `images/${d.fileName}`);
                 area.appendChild(div);
             });
-            document.getElementById('total-count').textContent = myDeck.reduce((acc, d) => acc + d.count, 0);
+
+            // 合計枚数の表示更新
+            document.getElementById('total-count').textContent = totalCards;
+            
+            // モバイル用バッジの更新
+            const navBadge = document.getElementById('nav-badge');
+            if (navBadge) {
+                navBadge.textContent = totalCards;
+                navBadge.style.display = totalCards > 0 ? 'flex' : 'none';
+            }
         }
 
         function removeFromDeck(name) {
@@ -717,11 +799,13 @@
             document.getElementById('screen-builder').classList.remove('active'); 
             document.getElementById('screen-mulligan').classList.add('active'); 
             document.getElementById('manual-input').value = myDeck.map(d => `${d.name} x${d.count}`).join("\n"); 
+            updateMobileNavLabels('mulligan'); // ラベル切り替え
             showMobilePane('left'); 
         }
         function switchToBuilder() { 
             document.getElementById('screen-mulligan').classList.remove('active'); 
             document.getElementById('screen-builder').classList.add('active'); 
+            updateMobileNavLabels('builder'); // ラベル切り替え
             showMobilePane('left'); 
         }
         
