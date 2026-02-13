@@ -3,9 +3,9 @@ const fileMap = [
     { file: 'cards.csv', name: 'カードの種類と領域' },
     { file: 'turns.csv', name: 'ターンの流れ' },
     { file: 'terms.csv', name: '用語集' },
-    { file: 'abilities.csv', name: '能力語' },
     { file: 'keywords.csv', name: 'キーワード能力' },
     { file: 'processes.csv', name: 'キーワード処理' },
+    { file: 'abilities.csv', name: '能力語' },
     { file: 'counters.csv', name: 'カウンター' },
     { file: 'otherrules.csv', name: 'その他のルール' }
 ];
@@ -75,7 +75,6 @@ function resetHome() {
     if(localInput) localInput.style.display = 'none'; // ホームではページ内検索を隠す
     
     const container = document.getElementById('data-container');
-    // ★ボタンを追加した初期画面
     container.innerHTML = `
         <div class="welcome-msg">
             <h3>クリスタル・フロンティア ルールブックへようこそ</h3>
@@ -130,7 +129,6 @@ function executeGlobalSearch() {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    // データにカテゴリ名を付与
                     const labeledData = results.data.map(row => ({
                         ...row,
                         _categoryName: item.name
@@ -146,7 +144,6 @@ function executeGlobalSearch() {
         const flatData = allFilesData.flat();
 
         const filtered = flatData.filter(item => {
-            // 検索対象のカラム
             const name = item['種類・領域'] || item['項目名'] || item['用語名'] || item['能力語'] || item['能力名'] || item['処理名'] || item['カウンター名'] || '';
             const desc = item['解説'] || item['ルール内容'] || '';
             
@@ -159,14 +156,20 @@ function executeGlobalSearch() {
 
 /**
  * テキスト内の (1) や (赤) などを画像アイコンに変換する
+ * 修正：入れ子構造（例の中にアイコンがある場合など）で誤爆しないよう正規表現を改善
  */
 function formatEffect(text) {
     if (!text) return "";
     // 全角括弧を半角に統一
     let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
-    // 括弧内（1〜15文字）を画像タグに置換
-    // main/rulebook/ から見て main/images/icons/ なのでパスは ../images/icons/
-    return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
+    
+    /**
+     * 正規表現の修正点: \(([^()]{1,15})\)
+     * [^)] ではなく [^()] とすることで、「閉じ括弧ではない」かつ「開き括弧でもない」文字を対象にします。
+     * これにより、(例：(X)(赤)) のような構造において、外側の (例：...(赤)) が一つの大きな括弧として
+     * 誤認識（最長一致の副作用）されるのを防ぎ、内側の (X) や (赤) を正確に抽出できます。
+     */
+    return normalized.replace(/\(([^()]{1,15})\)/g, (match, content) => {
         const cleanContent = content.trim();
         const safeMatch = match.replace(/"/g, '&quot;');
         return `<img src="../images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
@@ -187,20 +190,17 @@ function renderData(data, showCategory = false) {
         const name = item['種類・領域'] || item['項目名'] || item['用語名'] || item['能力語'] || item['能力名'] || item['処理名'] || item['カウンター名'];
         const desc = item['解説'] || item['ルール内容'];
         
-        // 項目名か解説のどちらかがあれば表示
         if (name || desc) {
             const card = document.createElement('div');
             card.className = 'rule-card';
             
-            // カテゴリタグ（全検索時）
             const categoryHtml = showCategory && item._categoryName 
                 ? `<span class="category-tag">${item._categoryName}</span>` 
                 : '';
 
-            // 見出し
-            const titleHtml = name ? `<h3>${name}</h3>` : '';
+            // 項目名にも formatEffect を適用するように変更
+            const titleHtml = name ? `<h3>${formatEffect(name)}</h3>` : '';
             
-            // 本文（ここで formatEffect を適用してアイコン化する）
             const descHtml = desc ? `<p>${formatEffect(desc)}</p>` : '';
 
             card.innerHTML = `
