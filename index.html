@@ -322,16 +322,16 @@
                 
                 <label>並び替え / リセット</label>
                 <div style="grid-column: span 2; display: flex; gap: 5px; margin-bottom: 4px;">
-                    <select id="q-sort-key" onchange="filterCards()" style="flex: 0 0 100px;">
+                    <select id="q-sort-key" onchange="filterCards()" style="flex: 3; min-width: 0;">
                         <option value="id">ID</option>
                         <option value="name">名前</option>
                         <option value="costTotal">コスト</option>
                         <option value="atk">ATK</option>
                         <option value="hp">HP</option>
                     </select>
-                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 1;">
-                        <option value="1">昇順 (▲)</option>
-                        <option value="-1">降順 (▼)</option>
+                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 1; min-width: 0;">
+                        <option value="1">▲ 昇順</option>
+                        <option value="-1">▼ 降順</option>
                     </select>
                 </div>
                 <div style="grid-column: span 2;">
@@ -598,7 +598,6 @@
             
             const showToken = document.getElementById('chk-token').checked;
             
-            // エピックフィルターの状態取得
             const epicOnly = document.getElementById('chk-epic').checked;
             const nonEpicOnly = document.getElementById('chk-non-epic').checked;
 
@@ -614,15 +613,12 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
-                // トークン判定
                 if (c.isToken && !showToken) return false;
 
-                // エピック判定（categoryに「エピック」が含まれるか）
                 const isEpic = c.category.includes("エピック");
                 if (epicOnly && !isEpic) return false;
                 if (nonEpicOnly && isEpic) return false;
 
-                // 分類判定
                 if (q.cats.length > 0 || (showToken && c.isToken)) {
                     let matchCat = false;
                     if (q.cats.some(cat => c.category.includes(cat))) {
