@@ -24,7 +24,7 @@
         body { font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow: hidden; font-size: 13px; }
         
         /* レイアウト */
-        .screen { display: none; height: 100vh; width: 100vw; flex-direction: row; }
+        .screen { display: none; height: 100vh; width: 100%; flex-direction: row; } /* ★変更: widthを100vwから100%に */
         .active { display: flex; }
         
         /* 左パネル */
@@ -87,14 +87,18 @@
         .check-label:has(input:checked) { background: var(--blue); color: #fff; border-color: var(--blue); }
 
         /* スクロールエリア */
-        #search-results { flex-grow: 1; overflow-y: auto; background: #000; border: 1px solid var(--border); }
+        #search-results { 
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden; /* ★変更: 横スクロール防止 */
+            background: #000; border: 1px solid var(--border); 
+        }
         #deck-list { 
-            flex-grow: 1; overflow-y: auto; background: #000; padding: 10px; 
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden; /* ★変更: 横スクロール防止 */
+            background: #000; padding: 10px; 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-w)); 
             gap: 12px; align-content: start; 
         }
-        #play-area { flex-grow: 1; overflow-y: auto; background: #0a2012; border-radius: 8px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 10px; padding: 20px; }
+        #play-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #0a2012; border-radius: 8px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 10px; padding: 20px; }
 
         /* カード一覧のレイアウト */
         .card-row { display: flex; padding: 6px; border-bottom: 1px solid var(--border); gap: 8px; background: #161b22; align-items: flex-start; }
@@ -108,7 +112,8 @@
         .info-header { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-bottom: 2px; }
         .card-name { font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 2px; }
         
-        .card-sub { font-size: 11px; color: #8b949e; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+        /* ★変更: スマホで文字がはみ出さないように調整 */
+        .card-sub { font-size: 11px; color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: flex; align-items: center; gap: 6px; }
         
         .stat-emphasis {
             font-family: "Impact", "Arial Black", sans-serif;
@@ -164,7 +169,7 @@
         }
         #hover-preview img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* ★追加: スマホ拡大時の閉じるボタン */
+        /* スマホ拡大時の閉じるボタン */
         #preview-close-btn {
             display: none; position: absolute; top: 5px; left: 5px; z-index: 10000;
             width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.8);
@@ -185,6 +190,9 @@
         #advanced-filters { display: grid; }
 
         @media (max-width: 768px) {
+            /* ★追加: PC用ヘルプテキストを消す */
+            .pc-only-text { display: none !important; }
+
             /* スマホ用カードサイズ (約70%) */
             :root {
                 --card-w: 75px;  
@@ -321,7 +329,7 @@
         <div class="right-pane">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
                 <h3 style="margin:0;">Deck: <span id="total-count" style="color:var(--accent);">0</span>枚</h3>
-                <div style="font-size:10px; color:#aaa;">(左クリック:追加 / 右クリック:削除)</div>
+                <div class="pc-only-text" style="font-size:10px; color:#aaa;">(左クリック:追加 / 右クリック:削除)</div>
                 <button class="btn btn-accent" onclick="switchToMulligan()">一人回し ➔</button>
             </div>
             <div id="deck-list"></div>
@@ -784,14 +792,9 @@
             if (simDeck.length === 0) return; const card = simDeck.pop();
             const img = document.createElement('img'); img.src = `images/${card.fileName}`; img.className = 'play-card';
             enablePreview(img, `images/${card.fileName}`); 
-            // マリガン画面はPCでもスマホでもクリックで消す挙動は共通でOKだが、スマホは拡大もしたい
-            // ただし現状のコードだとスマホは拡大優先、PCはクリックで削除になっている
+            // マリガン画面
             if (!isMobile()) {
                 img.onclick = () => img.remove();
-            } else {
-                // スマホのマリガン画面：タップで拡大（削除ボタンを別途つけるか、拡大画面に削除機能つけるかだが、現状は「拡大優先」とする）
-                // ※マリガンでのカード削除は「盤面から取り除く」意味合いなので、ダブルタップか長押しにする手もあるが
-                // いったん「タップ＝拡大」の統一操作とする。
             }
             
             document.getElementById('play-area').appendChild(img); updateSimCount();
