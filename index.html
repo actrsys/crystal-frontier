@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
     <title>Crystal Frontier - Custom Builder</title>
     <style>
         /* =========================================
@@ -124,18 +125,35 @@
         .card-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         
         .info-header { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-bottom: 2px; min-width: 0; }
-        .card-name { font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 2px; white-space: nowrap; }
         
-        .card-sub { font-size: 11px; color: #8b949e; white-space: nowrap; max-width: 100%; display: flex; align-items: center; gap: 6px; }
+        /* カード名エリア */
+        .card-name { 
+            font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 2px; 
+            width: 100%; overflow-x: auto; white-space: nowrap; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .card-name::-webkit-scrollbar { display: none; }
+        
+        /* 属性・数値エリア全体 */
+        .card-sub { 
+            font-size: 11px; color: #8b949e; 
+            display: flex; align-items: center; 
+            width: 100%; overflow: hidden; /* 親ははみ出しを隠す */
+        }
         
         .stat-emphasis {
             font-family: "Impact", "Arial Black", sans-serif;
-            font-size: 15px;
-            color: #fff;
-            letter-spacing: 0.5px;
-            margin-right: 4px;
-            flex-shrink: 0;
+            font-size: 15px; color: #fff; letter-spacing: 0.5px;
+            flex-shrink: 0; /* 数値は絶対に縮めない */
         }
+
+        /* ★新設：タイプ情報だけのスクロールエリア */
+        .info-scroll-area {
+            flex-grow: 1; overflow-x: auto; white-space: nowrap;
+            scrollbar-width: none; -ms-overflow-style: none;
+            margin-left: 4px;
+        }
+        .info-scroll-area::-webkit-scrollbar { display: none; }
 
         /* 効果テキストエリア */
         .card-effect {
@@ -222,18 +240,6 @@
             }
             .left-pane.active-pane, .right-pane.active-pane { display: flex; }
             .gutter { display: none !important; }
-
-            /* ★追加: スマホで長いテキストを横スクロール可能にする設定 */
-            .card-name, .card-sub {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none; /* Firefox */
-            }
-            .card-name::-webkit-scrollbar, .card-sub::-webkit-scrollbar {
-                display: none; /* Chrome/Safari */
-            }
 
             #advanced-filters { display: none; border-top: none; margin-top: -5px; }
             #filter-toggle-btn {
@@ -581,7 +587,7 @@
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
                 if (c.atk < q.aMin || c.atk > q.aMax) return false;
-                if (c.hp < q.hMin || c.hp > q.hMax) return false; // ★修正: hp-maxのタイポ修正
+                if (c.hp < q.hMin || c.hp > q.hMax) return false;
                 return true;
             });
             const sortKey = document.getElementById('q-sort-key').value;
@@ -615,14 +621,27 @@
                 div.className = 'card-row';
                 const effectHtml = formatEffect(c.effect);
                 const effectPart = effectHtml ? `<div class="card-effect">${effectHtml}</div>` : ""; 
-                let infoParts = []; let statHtml = ""; let hasStat = false;
+                
+                let infoParts = [];
+                let hasStat = false;
                 if ((c.category && c.category.includes("ユニット")) || c.atk > 0 || c.hp > 0) {
-                     statHtml = `<span class="stat-emphasis">${c.atk}/${c.hp}</span>`; hasStat = true;
+                     hasStat = true;
                 }
                 if (c.category) infoParts.push(c.category);
                 if (c.color) infoParts.push(c.color);
                 if (c.type && c.type !== "-" && c.type !== "‐") infoParts.push(c.type);
-                let subInfoHtml = hasStat ? `${statHtml} | ${infoParts.join(" | ")}` : infoParts.join(" | ");
+                
+                // ★修正：ステータス数値と、スクロールする属性情報を分離
+                let subInfoHtml = "";
+                if (hasStat) {
+                    subInfoHtml = `
+                        <span class="stat-emphasis">${c.atk}/${c.hp}</span>
+                        <span class="info-scroll-area">| ${infoParts.join(" | ")}</span>
+                    `;
+                } else {
+                    subInfoHtml = `<span class="info-scroll-area">${infoParts.join(" | ")}</span>`;
+                }
+
                 const imgClickAction = mobile ? "" : `onclick="addToDeck('${safeName}')"`;
                 div.innerHTML = `
                     <div class="img-box" ${imgClickAction}>
