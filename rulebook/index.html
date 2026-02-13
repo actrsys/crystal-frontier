@@ -17,8 +17,9 @@
         <div id="overlay" class="overlay"></div>
 
         <aside class="sidebar" id="sidebar">
-            <h1 class="logo" onclick="resetHome()" style="cursor: pointer;">Crystal<span>Frontier</span></h1>
             <button id="menu-close" class="close-btn">×</button> 
+            
+            <h1 class="logo" onclick="resetHome()" style="cursor: pointer;">Crystal<span>Frontier</span></h1>
             
             <div class="global-search-area">
                 <input type="text" id="globalSearchInput" placeholder="全ルールから検索..." onkeypress="handleGlobalSearch(event)">
@@ -46,10 +47,11 @@
                     <input type="text" id="localSearchInput" placeholder="このページ内を絞り込み..." onkeyup="filterLocalContent()">
                 </div>
             </header>
+            
             <div id="data-container" class="data-grid">
                 <div class="welcome-msg">
                     <h3>クリスタル・フロンティア ルールブックへようこそ</h3>
-                    <p>左のメニューから項目を選択するか、上の検索バーからキーワードを検索してください。</p>
+                    <p>左のメニューから項目を選択するか、サイドバーからキーワードを全検索してください。</p>
                 </div>
             </div>
         </main>
