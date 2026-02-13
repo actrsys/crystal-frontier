@@ -69,7 +69,7 @@ nav a:hover {
 .nav-special a {
     color: var(--accent-color) !important;
     border: 1px solid var(--accent-color);
-    margin-bottom: 15px;
+    margin-top: 15px; /* 位置変更に伴い margin-bottom から変更 */
     text-align: center;
     background: rgba(56, 189, 248, 0.1);
     font-weight: bold;
