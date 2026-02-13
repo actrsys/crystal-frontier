@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Crystal Frontier - Custom Builder</title>
     <style>
         /* =========================================
@@ -26,12 +27,12 @@
         .screen { display: none; height: 100vh; width: 100vw; flex-direction: row; }
         .active { display: flex; }
         
-        /* ★変更: 左パネル (初期幅を指定、flex-shrink:0で勝手に縮まないようにする) */
+        /* 左パネル */
         .left-pane { 
             width: 450px; 
             min-width: 250px; 
             max-width: 80vw;
-            border-right: none; /* 仕切り線に任せるため削除 */
+            border-right: none;
             padding: 10px; 
             display: flex; 
             flex-direction: column; 
@@ -39,7 +40,7 @@
             flex-shrink: 0; 
         }
 
-        /* ★追加: 仕切り線 (ドラッグ用ハンドル) */
+        /* 仕切り線 (ドラッグ用ハンドル) */
         .gutter {
             width: 8px;
             background: #21262d;
@@ -54,13 +55,12 @@
             justify-content: center;
         }
         .gutter:hover, .gutter.dragging { background: var(--accent); }
-        /* 仕切り線の真ん中に小さな飾りポッチ */
         .gutter::after { content: "||"; color: #555; font-size: 9px; letter-spacing: -1px; }
 
-        /* ★変更: 右パネル (残りの幅を埋める) */
+        /* 右パネル */
         .right-pane { 
             flex-grow: 1; 
-            min-width: 0; /* flexアイテムのはみ出し防止 */
+            min-width: 0;
             padding: 10px; 
             display: flex; 
             flex-direction: column; 
@@ -122,9 +122,9 @@
         .card-effect {
             font-size: 11px; color: #ccc; line-height: 1.4;
             background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px;
-            max-height: 48px; /* 約3行分 */
-            overflow-y: auto; /* はみ出たらスクロール */
-            white-space: pre-wrap; /* 改行を反映 */
+            max-height: 48px;
+            overflow-y: auto;
+            white-space: pre-wrap;
             border: 1px solid #30363d;
         }
         .card-effect::-webkit-scrollbar { width: 4px; }
@@ -133,7 +133,7 @@
         .inline-icon { height: 1.1em; width: auto; vertical-align: text-bottom; margin: 0 1px; display: inline-block; }
         .btn-add { height: 100%; align-self: center; }
 
-        /* デッキ・プレビュー等は変更なし */
+        /* デッキ・プレビュー等 */
         .deck-item { position: relative; width: var(--card-w); cursor: pointer; }
         .deck-item img { 
             width: var(--card-w); height: var(--card-h); 
@@ -150,10 +150,56 @@
         .btn-green { background: var(--green); } .btn-blue { background: var(--blue); } .btn-accent { background: var(--accent); color: #000; } .btn-red { background: var(--red); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         @keyframes drawAnim { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* =========================================
+           ★スマホ対応 (画面幅768px以下で適用)
+           ========================================= */
+        #mobile-nav { display: none; } /* PCでは隠す */
+
+        @media (max-width: 768px) {
+            /* レイアウトを縦並びに変更 */
+            .screen { flex-direction: column; height: calc(100vh - 50px); } /* 下部バーの分を空ける */
+            
+            /* 左右パネルを強制的に全画面化 */
+            .left-pane, .right-pane { 
+                width: 100% !important; 
+                max-width: 100% !important;
+                height: 100%; 
+                display: none; /* 一旦両方隠す */
+            }
+            
+            /* active-pane クラスがついている方だけ表示 */
+            .left-pane.active-pane, .right-pane.active-pane { display: flex; }
+
+            /* 仕切り線はスマホでは不要 */
+            .gutter { display: none !important; }
+
+            /* ホバープレビューは邪魔になるので調整 */
+            #hover-preview { 
+                width: 80vw; height: auto; 
+                top: 50% !important; left: 50% !important; 
+                transform: translate(-50%, -50%);
+                pointer-events: none;
+            }
+
+            /* 下部ナビゲーションバー */
+            #mobile-nav {
+                display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
+                background: #161b22; border-top: 1px solid #30363d; z-index: 2000;
+            }
+            .nav-btn {
+                flex: 1; border: none; background: none; color: #8b949e;
+                font-weight: bold; cursor: pointer; border-right: 1px solid #30363d;
+                font-size: 14px;
+            }
+            .nav-btn:last-child { border-right: none; }
+            .nav-btn.active { background: #1f6feb; color: #fff; }
+        }
     </style>
 </head>
 <body>
     <div id="hover-preview"><img id="preview-img" src=""></div>
+    
     <div id="file-overlay" class="overlay" style="display: none;">
         <h2 style="color:var(--accent);">Crystal Frontier System</h2>
         <input type="file" id="csv-file" accept=".csv" style="margin-bottom: 20px;">
@@ -263,6 +309,11 @@
         </div>
     </div>
 
+    <div id="mobile-nav">
+        <button class="nav-btn active" id="btn-search" onclick="showMobilePane('left')">🔍 カード検索 / 設定</button>
+        <button class="nav-btn" id="btn-deck" onclick="showMobilePane('right')">🃏 デッキ / プレイ</button>
+    </div>
+
     <script>
         const CONFIG = {
             maxCardsInDeck: 4,
@@ -273,25 +324,51 @@
 
         let MASTER_DB = [], myDeck = [], simDeck = [], hoverTimer = null;
 
-        // --- ★追加: リサイズ機能の初期化 と CSV自動読み込み ---
+        // --- 初期化処理 ---
         window.addEventListener('DOMContentLoaded', () => {
-           setupResizer('pane-l-build', 'gutter-build');
-           setupResizer('pane-l-mulligan', 'gutter-mulligan');
+            setupResizer('pane-l-build', 'gutter-build');
+            setupResizer('pane-l-mulligan', 'gutter-mulligan');
 
-            // ★追加：ページを開いた瞬間にサーバー上のCSVを読みに行く処理
+            // ★追加: スマホ用に初期状態をセット（最初は左パネルを表示）
+            showMobilePane('left'); 
+
+            // ★CSV自動読み込み
             fetch('card_list.csv')
                 .then(response => {
                     if (!response.ok) throw new Error("CSVが見つかりません");
                     return response.text();
                 })
                 .then(text => {
-                    parseCSV(text); // 読み込んだテキストを解析関数に渡す
+                    parseCSV(text);
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert("カードデータの読み込みに失敗しました。\ncard_list.csv が同じ場所にあるか確認してください。");
                 });
         });
+
+        // --- ★追加: スマホ表示の切り替え処理 ---
+        function showMobilePane(side) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (!activeScreen) return;
+
+            const left = activeScreen.querySelector('.left-pane');
+            const right = activeScreen.querySelector('.right-pane');
+            const btnSearch = document.getElementById('btn-search');
+            const btnDeck = document.getElementById('btn-deck');
+
+            if (side === 'left') {
+                left.classList.add('active-pane');
+                right.classList.remove('active-pane');
+                btnSearch.classList.add('active');
+                btnDeck.classList.remove('active');
+            } else {
+                left.classList.remove('active-pane');
+                right.classList.add('active-pane');
+                btnSearch.classList.remove('active');
+                btnDeck.classList.add('active');
+            }
+        }
 
         function setupResizer(leftId, gutterId) {
             const leftPane = document.getElementById(leftId);
@@ -302,17 +379,14 @@
                 isDragging = true;
                 gutter.classList.add('dragging');
                 document.body.style.cursor = 'col-resize';
-                e.preventDefault(); // テキスト選択防止
+                e.preventDefault();
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
-                // マウス位置に合わせて左パネルの幅を更新
-                // 最小幅(200px)などはCSSのmin-widthでも制御しているが、念のため計算にも含める
                 let newWidth = e.clientX;
                 if (newWidth < 200) newWidth = 200;
                 if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth - 100;
-                
                 leftPane.style.width = newWidth + 'px';
             });
 
@@ -324,7 +398,6 @@
                 }
             });
         }
-        // ----------------------------------
 
         function enablePreview(el, src) {
             el.onmouseenter = (e) => {
@@ -370,8 +443,8 @@
                 if (fName && !fName.includes(".")) fName += ".png";
                 
                 const name = clean(cells[0]);
-                const type = clean(cells[4]);
                 const category = clean(cells[3]);
+                const type = clean(cells[4]);
                 const reading = clean(cells[17]); 
                 
                 const rawEffects = [cells[11], cells[12], cells[13], cells[14]];
@@ -554,8 +627,18 @@
             renderDeck();
         }
 
-        function switchToMulligan() { document.getElementById('screen-builder').classList.remove('active'); document.getElementById('screen-mulligan').classList.add('active'); document.getElementById('manual-input').value = myDeck.map(d => `${d.name} x${d.count}`).join("\n"); }
-        function switchToBuilder() { document.getElementById('screen-mulligan').classList.remove('active'); document.getElementById('screen-builder').classList.add('active'); }
+        // 画面切り替え時にスマホのタブも初期位置(Left)に戻す
+        function switchToMulligan() { 
+            document.getElementById('screen-builder').classList.remove('active'); 
+            document.getElementById('screen-mulligan').classList.add('active'); 
+            document.getElementById('manual-input').value = myDeck.map(d => `${d.name} x${d.count}`).join("\n"); 
+            showMobilePane('left'); 
+        }
+        function switchToBuilder() { 
+            document.getElementById('screen-mulligan').classList.remove('active'); 
+            document.getElementById('screen-builder').classList.add('active'); 
+            showMobilePane('left'); 
+        }
         
         function applyManualList() {
             const input = document.getElementById('manual-input').value; myDeck = [];
@@ -577,6 +660,8 @@
             const hSize = parseInt(document.getElementById('hand-size').value);
             for (let i = 0; i < hSize; i++) drawOne();
             updateSimCount();
+            // スマホならプレイエリア(Right)に自動切り替え
+            if (window.innerWidth <= 768) showMobilePane('right');
         }
         function drawOne() {
             if (simDeck.length === 0) return; const card = simDeck.pop();
@@ -588,5 +673,4 @@
         function copyRecipe() { let txt = myDeck.map(d => `${d.name} x${d.count}`).join("\n"); navigator.clipboard.writeText(txt).then(() => alert("コピーしました！")); }
     </script>
 </body>
-
 </html>
