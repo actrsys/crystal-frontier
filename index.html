@@ -284,6 +284,12 @@
                     <label class="check-label"><input type="checkbox" id="chk-token" onchange="filterCards()"> トークン</label>
                 </div>
 
+                <label>エピック制限</label>
+                <div class="check-group" id="grp-epic">
+                    <label class="check-label"><input type="checkbox" id="chk-non-epic" onchange="filterCards()"> 非エピック</label>
+                    <label class="check-label"><input type="checkbox" id="chk-epic" onchange="filterCards()"> エピック</label>
+                </div>
+
                 <label>色 (複数選択可)</label>
                 <div class="check-group" id="grp-col">
                     <label class="check-label"><input type="checkbox" value="赤" onchange="filterCards()"> 赤</label>
@@ -315,18 +321,20 @@
                 <div class="range-box"><input type="number" id="q-hp-min" placeholder="0" oninput="filterCards()"><span>~</span><input type="number" id="q-hp-max" placeholder="∞" oninput="filterCards()"></div>
                 
                 <label>並び替え / リセット</label>
-                <div style="grid-column: span 2; display: flex; gap: 5px; align-items: center;">
-                    <select id="q-sort-key" onchange="filterCards()" style="flex: 1; min-width: 0;">
+                <div style="grid-column: span 2; display: flex; gap: 5px; margin-bottom: 4px;">
+                    <select id="q-sort-key" onchange="filterCards()" style="flex: 0 0 100px;">
                         <option value="id">ID</option>
                         <option value="name">名前</option>
                         <option value="costTotal">コスト</option>
                         <option value="atk">ATK</option>
                         <option value="hp">HP</option>
                     </select>
-                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 0 0 50px; min-width: 50px;">
-                        <option value="1">▲</option>
-                        <option value="-1">▼</option>
+                    <select id="q-sort-dir" onchange="filterCards()" style="flex: 1;">
+                        <option value="1">昇順 (▲)</option>
+                        <option value="-1">降順 (▼)</option>
                     </select>
+                </div>
+                <div style="grid-column: span 2;">
                     <button class="btn btn-red" onclick="resetSearch()" style="white-space: nowrap;">↺ Reset</button>
                 </div>
             </div>
@@ -456,7 +464,6 @@
                 btn.textContent = '▲ 詳細条件を閉じる';
                 btn.style.background = '#30363d'; btn.style.color = '#fff';
                 
-                // ★修正: スマホの時は検索結果を隠して、フィルタを最大化する
                 if (isMobile()) {
                     results.style.display = 'none';
                 }
@@ -465,7 +472,6 @@
                 btn.textContent = '▼ 詳細条件を指定する';
                 btn.style.background = '#21262d'; btn.style.color = '#8b949e';
                 
-                // ★修正: スマホでフィルタを閉じたら検索結果を戻す
                 if (isMobile()) {
                     results.style.display = 'block';
                 }
@@ -587,12 +593,14 @@
         }
 
         function filterCards() {
-            // カテゴリのチェックボックス（トークン以外）
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked:not(#chk-token)`)).map(e => e.value);
             const getNum = (id, def) => { const v = document.getElementById(id).value; return v === "" ? def : parseInt(v); };
             
-            // トークンのチェック状態
             const showToken = document.getElementById('chk-token').checked;
+            
+            // エピックフィルターの状態取得
+            const epicOnly = document.getElementById('chk-epic').checked;
+            const nonEpicOnly = document.getElementById('chk-non-epic').checked;
 
             const rawText = document.getElementById('q-text').value.toLowerCase().trim();
             const keywords = rawText ? rawText.split(/[\s　]+/) : []; 
@@ -606,11 +614,17 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
+                // トークン判定
                 if (c.isToken && !showToken) return false;
 
-                if (q.cats.length > 0 || showToken) {
+                // エピック判定（categoryに「エピック」が含まれるか）
+                const isEpic = c.category.includes("エピック");
+                if (epicOnly && !isEpic) return false;
+                if (nonEpicOnly && isEpic) return false;
+
+                // 分類判定
+                if (q.cats.length > 0 || (showToken && c.isToken)) {
                     let matchCat = false;
-                    
                     if (q.cats.some(cat => c.category.includes(cat))) {
                         matchCat = true;
                     }
@@ -806,5 +820,3 @@
     </script>
 </body>
 </html>
-
-
