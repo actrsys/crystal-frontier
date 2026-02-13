@@ -90,10 +90,6 @@
         .check-label input { display: none; } 
         .check-label:has(input:checked) { background: var(--col-blue); color: #fff; border-color: var(--col-blue); }
 
-        /* ★追加修正：トークン表示切替用の特別なスタイル */
-        .check-label.special { border-color: var(--accent); color: var(--accent); }
-        .check-label.special:has(input:checked) { background: var(--accent); color: #000; }
-
         /* スクロールエリア */
         #search-results { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #000; border: 1px solid var(--border-col); }
         #deck-list { flex-grow: 1; overflow-y: auto; overflow-x: hidden; background: #000; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, var(--card-w)); gap: 12px; align-content: start; }
@@ -216,7 +212,7 @@
                     <label class="check-label"><input type="checkbox" value="フラッシュ" onchange="filterCards()"> フラッシュ</label>
                     <label class="check-label"><input type="checkbox" value="エフェクト" onchange="filterCards()"> エフェクト</label>
                     <label class="check-label"><input type="checkbox" value="オルガノン" onchange="filterCards()"> オルガノン</label>
-                    <label class="check-label special"><input type="checkbox" id="chk-token" onchange="filterCards()"> トークン</label>
+                    <label class="check-label"><input type="checkbox" id="chk-token" onchange="filterCards()"> トークン</label>
                 </div>
 
                 <label>色 (複数選択可)</label>
@@ -494,10 +490,11 @@
         }
 
         function filterCards() {
-            // ★修正: トークンのチェックボックス(#chk-token)はカテゴリ検索用のリストから除外する
+            // カテゴリのチェックボックス（トークン以外）
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked:not(#chk-token)`)).map(e => e.value);
             const getNum = (id, def) => { const v = document.getElementById(id).value; return v === "" ? def : parseInt(v); };
             
+            // トークンのチェック状態
             const showToken = document.getElementById('chk-token').checked;
 
             const rawText = document.getElementById('q-text').value.toLowerCase().trim();
@@ -512,11 +509,31 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
-                // トークンは、スイッチがOFFなら非表示。ONなら検索対象に含める
+                // 1. 基本的なトークン非表示ルール
+                // トークンは「トークン」チェックが入っていない限り、何があっても表示しない
                 if (c.isToken && !showToken) return false;
 
+                // 2. フィルタリング動作
+                // カテゴリ選択が1つでもある、またはトークンチェックがONの場合（＝何らかの分類フィルタがアクティブ）
+                if (q.cats.length > 0 || showToken) {
+                    let matchCat = false;
+                    
+                    // 選択されたカテゴリ(Unit, Magic等)のいずれかに一致するか
+                    if (q.cats.some(cat => c.category.includes(cat))) {
+                        matchCat = true;
+                    }
+                    
+                    // または、トークンチェックONで、かつこれがトークンである場合
+                    if (showToken && c.isToken) {
+                        matchCat = true;
+                    }
+                    
+                    // どちらにも該当しなければ除外
+                    if (!matchCat) return false;
+                }
+                
+                // --- 以下、共通フィルタリング ---
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
-                if (q.cats.length > 0 && !q.cats.some(cat => c.category.includes(cat))) return false;
                 if (q.cols.length > 0 && !q.cols.some(col => c.color.includes(col))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
