@@ -21,10 +21,16 @@
             --blue: #1f6feb;
         }
 
-        body { font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow: hidden; font-size: 13px; }
+        /* ズーム防止のため touch-action を追加 */
+        body { 
+            font-family: "Helvetica Neue", Arial, sans-serif; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; overflow: hidden; font-size: 13px;
+            touch-action: manipulation; 
+        }
         
         /* レイアウト */
-        .screen { display: none; height: 100vh; width: 100%; flex-direction: row; } /* ★変更: widthを100vwから100%に */
+        .screen { display: none; height: 100vh; width: 100%; flex-direction: row; }
         .active { display: flex; }
         
         /* 左パネル */
@@ -82,17 +88,18 @@
             display: inline-block; cursor: pointer; font-size: 11px;
             background: #21262d; border: 1px solid var(--border);
             padding: 3px 8px; border-radius: 4px; color: var(--text); user-select: none; transition: 0.2s;
+            touch-action: manipulation;
         }
         .check-label input { display: none; } 
         .check-label:has(input:checked) { background: var(--blue); color: #fff; border-color: var(--blue); }
 
         /* スクロールエリア */
         #search-results { 
-            flex-grow: 1; overflow-y: auto; overflow-x: hidden; /* ★変更: 横スクロール防止 */
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden; 
             background: #000; border: 1px solid var(--border); 
         }
         #deck-list { 
-            flex-grow: 1; overflow-y: auto; overflow-x: hidden; /* ★変更: 横スクロール防止 */
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden; 
             background: #000; padding: 10px; 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-w)); 
@@ -104,7 +111,7 @@
         .card-row { display: flex; padding: 6px; border-bottom: 1px solid var(--border); gap: 8px; background: #161b22; align-items: flex-start; }
         .card-row:hover { background: #21262d; }
         
-        .img-box { width: 50px; height: 70px; background: #222; border: 1px solid #444; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .img-box { width: 50px; height: 70px; background: #222; border: 1px solid #444; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
         .img-box img { width: 100%; height: 100%; object-fit: contain; }
         
         .card-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -112,7 +119,6 @@
         .info-header { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-bottom: 2px; }
         .card-name { font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 2px; }
         
-        /* ★変更: スマホで文字がはみ出さないように調整 */
         .card-sub { font-size: 11px; color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: flex; align-items: center; gap: 6px; }
         
         .stat-emphasis {
@@ -133,13 +139,14 @@
         .card-effect::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
 
         .inline-icon { height: 1.1em; width: auto; vertical-align: text-bottom; margin: 0 1px; display: inline-block; }
-        .btn-add { height: 100%; align-self: center; }
+        .btn-add { height: 100%; align-self: center; touch-action: manipulation; }
 
         /* デッキ・プレビュー等 */
         .deck-item { position: relative; width: var(--card-w); height: var(--card-h); cursor: pointer; }
         .deck-item img { 
             width: 100%; height: 100%; 
             border: 1px solid #fff; border-radius: 4px; object-fit: cover; transition: 0.1s;
+            touch-action: manipulation;
         }
         .deck-item img:hover { border-color: var(--accent); opacity: 0.9; }
         .deck-item img:active { transform: scale(0.98); }
@@ -147,19 +154,20 @@
         
         /* スマホ用デッキ操作ボタン */
         .mobile-deck-controls {
-            display: none; /* PCでは隠す */
+            display: none; 
             position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; z-index: 20;
             border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; overflow: hidden;
         }
         .ctrl-btn {
             width: 50%; height: 100%; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin: 0; float: left;
+            touch-action: manipulation;
         }
         .ctrl-btn.minus { background: rgba(200, 50, 50, 0.8); }
         .ctrl-btn.minus:active { background: rgb(255, 0, 0); }
         .ctrl-btn.plus { background: rgba(50, 200, 50, 0.8); }
         .ctrl-btn.plus:active { background: rgb(0, 255, 0); }
 
-        .play-card { width: 120px; height: 168px; border: 2px solid #fff; border-radius: 6px; background: #000; animation: drawAnim 0.3s ease-out; cursor: help; }
+        .play-card { width: 120px; height: 168px; border: 2px solid #fff; border-radius: 6px; background: #000; animation: drawAnim 0.3s ease-out; cursor: help; touch-action: manipulation; }
         
         #hover-preview { 
             position: fixed; z-index: 9999; pointer-events: none; display: none; 
@@ -177,7 +185,7 @@
             cursor: pointer; align-items: center; justify-content: center;
         }
         
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #fff; font-size: 12px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #fff; font-size: 12px; touch-action: manipulation; }
         .btn-green { background: var(--green); } .btn-blue { background: var(--blue); } .btn-accent { background: var(--accent); color: #000; } .btn-red { background: var(--red); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         @keyframes drawAnim { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -190,10 +198,8 @@
         #advanced-filters { display: grid; }
 
         @media (max-width: 768px) {
-            /* ★追加: PC用ヘルプテキストを消す */
             .pc-only-text { display: none !important; }
 
-            /* スマホ用カードサイズ (約70%) */
             :root {
                 --card-w: 75px;  
                 --card-h: 105px;
@@ -208,7 +214,6 @@
             .left-pane.active-pane, .right-pane.active-pane { display: flex; }
             .gutter { display: none !important; }
 
-            /* 詳細フィルタ */
             #advanced-filters { display: none; border-top: none; margin-top: -5px; }
             #filter-toggle-btn {
                 display: block; width: 100%; padding: 8px; margin-bottom: 5px;
@@ -217,13 +222,14 @@
             }
             #filter-toggle-btn:hover { background: #30363d; color: #fff; }
 
-            /* ホバープレビュー（スマホではオーバーレイとして扱う） */
+            /* ★修正：初期表示を display: none に設定 */
             #hover-preview { 
+                display: none; 
                 width: 100vw !important; height: 100vh !important; 
                 top: 0 !important; left: 0 !important; border: none; border-radius: 0;
-                transform: none; pointer-events: auto !important; /* タップ有効化 */
-                background: rgba(0,0,0,0.85); /* 背景暗転 */
-                display: flex; align-items: center; justify-content: center;
+                transform: none; pointer-events: auto !important;
+                background: rgba(0,0,0,0.85);
+                align-items: center; justify-content: center;
                 z-index: 9999;
             }
             #hover-preview img {
@@ -231,7 +237,6 @@
                 border: 2px solid var(--accent); border-radius: 8px;
             }
             
-            /* 下部ナビ */
             #mobile-nav {
                 display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
                 background: #161b22; border-top: 1px solid #30363d; z-index: 2000;
@@ -239,11 +244,11 @@
             .nav-btn {
                 flex: 1; border: none; background: none; color: #8b949e; font-weight: bold;
                 cursor: pointer; border-right: 1px solid #30363d; font-size: 14px;
+                touch-action: manipulation;
             }
             .nav-btn:last-child { border-right: none; }
             .nav-btn.active { background: #1f6feb; color: #fff; }
 
-            /* スマホだけボタンを表示 */
             .mobile-deck-controls { display: block; }
         }
     </style>
@@ -380,14 +385,11 @@
         };
 
         let MASTER_DB = [], myDeck = [], simDeck = [], hoverTimer = null;
-        // PC/モバイル判定 (幅768px以下をモバイルとする)
         const isMobile = () => window.innerWidth <= 768;
 
-        // --- 初期化処理 ---
         window.addEventListener('DOMContentLoaded', () => {
             setupResizer('pane-l-build', 'gutter-build');
             setupResizer('pane-l-mulligan', 'gutter-mulligan');
-
             showMobilePane('left'); 
 
             fetch('card_list.csv')
@@ -395,54 +397,41 @@
                     if (!response.ok) throw new Error("CSVが見つかりません");
                     return response.text();
                 })
-                .then(text => {
-                    parseCSV(text);
-                })
+                .then(text => { parseCSV(text); })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert("カードデータの読み込みに失敗しました。\ncard_list.csv が同じ場所にあるか確認してください。");
+                    alert("カードデータの読み込みに失敗しました。");
                 });
         });
 
-        // スマホ表示の切り替え処理
         function showMobilePane(side) {
             const activeScreen = document.querySelector('.screen.active');
             if (!activeScreen) return;
-
             const left = activeScreen.querySelector('.left-pane');
             const right = activeScreen.querySelector('.right-pane');
             const btnSearch = document.getElementById('btn-search');
             const btnDeck = document.getElementById('btn-deck');
-
             if (side === 'left') {
-                left.classList.add('active-pane');
-                right.classList.remove('active-pane');
-                btnSearch.classList.add('active');
-                btnDeck.classList.remove('active');
+                left.classList.add('active-pane'); right.classList.remove('active-pane');
+                btnSearch.classList.add('active'); btnDeck.classList.remove('active');
             } else {
-                left.classList.remove('active-pane');
-                right.classList.add('active-pane');
-                btnSearch.classList.remove('active');
-                btnDeck.classList.add('active');
+                left.classList.remove('active-pane'); right.classList.add('active-pane');
+                btnSearch.classList.remove('active'); btnDeck.classList.add('active');
             }
         }
 
-        // フィルタ開閉ボタンの動作
         function toggleFilters() {
             const area = document.getElementById('advanced-filters');
             const btn = document.getElementById('filter-toggle-btn');
             const isClosed = window.getComputedStyle(area).display === 'none';
-            
             if (isClosed) {
                 area.style.display = 'grid';
                 btn.textContent = '▲ 詳細条件を閉じる';
-                btn.style.background = '#30363d';
-                btn.style.color = '#fff';
+                btn.style.background = '#30363d'; btn.style.color = '#fff';
             } else {
                 area.style.display = 'none';
                 btn.textContent = '▼ 詳細条件を指定する';
-                btn.style.background = '#21262d';
-                btn.style.color = '#8b949e';
+                btn.style.background = '#21262d'; btn.style.color = '#8b949e';
             }
         }
 
@@ -450,14 +439,10 @@
             const leftPane = document.getElementById(leftId);
             const gutter = document.getElementById(gutterId);
             let isDragging = false;
-
             gutter.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                gutter.classList.add('dragging');
-                document.body.style.cursor = 'col-resize';
-                e.preventDefault();
+                isDragging = true; gutter.classList.add('dragging');
+                document.body.style.cursor = 'col-resize'; e.preventDefault();
             });
-
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
                 let newWidth = e.clientX;
@@ -465,17 +450,11 @@
                 if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth - 100;
                 leftPane.style.width = newWidth + 'px';
             });
-
             document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    gutter.classList.remove('dragging');
-                    document.body.style.cursor = 'default';
-                }
+                if (isDragging) { isDragging = false; gutter.classList.remove('dragging'); document.body.style.cursor = 'default'; }
             });
         }
 
-        // ★スマホ用プレビューを閉じる関数
         function closePreviewMobile() {
             const p = document.getElementById('hover-preview');
             const btn = document.getElementById('preview-close-btn');
@@ -485,20 +464,17 @@
 
         function enablePreview(el, src) {
             if (isMobile()) {
-                // ★スマホ: タップで拡大表示（閉じるまで消えない）
                 el.onclick = (e) => {
                     const p = document.getElementById('hover-preview');
                     const img = document.getElementById('preview-img');
                     const btn = document.getElementById('preview-close-btn');
-                    
                     img.src = src;
-                    p.style.display = 'flex'; // スマホ用CSSで全画面中央配置
+                    p.style.display = 'flex';
                     p.style.opacity = '1';
                     btn.style.display = 'flex';
                     e.stopPropagation();
                 };
             } else {
-                // ★PC: ホバーで追従表示
                 el.onmouseenter = (e) => {
                     hoverTimer = setTimeout(() => {
                         const p = document.getElementById('hover-preview');
@@ -517,7 +493,7 @@
         }
         
         function updatePreviewPos(e) {
-            if (isMobile()) return; // スマホでは位置計算しない
+            if (isMobile()) return;
             const p = document.getElementById('hover-preview');
             const offset = 20; const pW = 320, pH = 448;
             let x = e.clientX + offset, y = e.clientY + offset;
@@ -535,47 +511,30 @@
                 const line = lines[i].trim(); if(!line) continue;
                 const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cells.length < 16) continue;
-                
                 const clean = (str) => {
                     let s = (str || "").trim();
-                    if (s.startsWith('"') && s.endsWith('"')) {
-                        s = s.slice(1, -1).replace(/""/g, '"');
-                    }
+                    if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1).replace(/""/g, '"');
                     return s;
                 };
-
                 let fName = clean(cells[16]);
                 if (fName && !fName.includes(".")) fName += ".png";
-                
                 const name = clean(cells[0]);
                 const category = clean(cells[3]);
                 const type = clean(cells[4]);
                 const reading = clean(cells[17]); 
-                
                 const rawEffects = [cells[11], cells[12], cells[13], cells[14]];
-                const effect = rawEffects
-                    .map(t => clean(t))
-                    .filter(t => t !== "" && t !== "-" && t !== "‐")
-                    .join("\n");
-
+                const effect = rawEffects.map(t => clean(t)).filter(t => t !== "" && t !== "-" && t !== "‐").join("\n");
                 const toHira = (str) => str.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
-
                 const rawText = name + reading + type + category + effect;
                 const searchText = (rawText + toHira(rawText)).toLowerCase();
-
                 MASTER_DB.push({
-                    id: i,
-                    name: name,
-                    reading: reading, 
+                    id: i, name: name, reading: reading, 
                     color: clean(cells[1]), rarity: clean(cells[2]), category: category, type: type,
                     costTotal: parseInt(clean(cells[6])) || 0,
                     atk: parseInt(clean(cells[8])) || 0, hp: parseInt(clean(cells[9])) || 0,
-                    effect: effect, 
-                    fileName: fName,
-                    searchText: searchText 
+                    effect: effect, fileName: fName, searchText: searchText 
                 });
             }
-            document.getElementById('hand-size').value = CONFIG.defaultHandSize;
             filterCards();
         }
 
@@ -585,20 +544,13 @@
                 const val = document.getElementById(id).value;
                 return val === "" ? defaultVal : parseInt(val);
             };
-
             const q = {
                 text: document.getElementById('q-text').value.toLowerCase().trim(),
-                cats: getChecked('grp-cat'),
-                cols: getChecked('grp-col'),
-                rares: getChecked('grp-rare'),
-                cMin: getNum('q-cost-min', 0),
-                cMax: getNum('q-cost-max', CONFIG.defaultCostMax),
-                aMin: getNum('q-atk-min', 0),
-                aMax: getNum('q-atk-max', CONFIG.defaultStatMax),
-                hMin: getNum('q-hp-min', 0),
-                hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
+                cats: getChecked('grp-cat'), cols: getChecked('grp-col'), rares: getChecked('grp-rare'),
+                cMin: getNum('q-cost-min', 0), cMax: getNum('q-cost-max', CONFIG.defaultCostMax),
+                aMin: getNum('q-atk-min', 0), aMax: getNum('q-atk-max', CONFIG.defaultStatMax),
+                hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
-
             let filtered = MASTER_DB.filter(c => {
                 if (!c.searchText.includes(q.text)) return false;
                 if (q.cats.length > 0 && !q.cats.some(cat => c.category.includes(cat))) return false;
@@ -609,21 +561,16 @@
                 if (c.hp < q.hMin || c.hp > q.hMax) return false;
                 return true;
             });
-
             const sortKey = document.getElementById('q-sort-key').value;
             const sortDir = parseInt(document.getElementById('q-sort-dir').value);
-
             filtered.sort((a, b) => {
                 if (sortKey === 'name') {
-                    const valA = a.reading || a.name;
-                    const valB = b.reading || b.name;
+                    const valA = a.reading || a.name; const valB = b.reading || b.name;
                     return String(valA).localeCompare(String(valB), 'ja') * sortDir;
                 }
-                const valA = a[sortKey] || 0;
-                const valB = b[sortKey] || 0;
+                const valA = a[sortKey] || 0; const valB = b[sortKey] || 0;
                 return (valA - valB) * sortDir;
             });
-
             renderResults(filtered);
         }
 
@@ -637,49 +584,23 @@
         }
 
         function renderResults(list) {
-            const area = document.getElementById('search-results');
-            area.innerHTML = '';
-            
-            // スマホかPCか判定
+            const area = document.getElementById('search-results'); area.innerHTML = '';
             const mobile = isMobile();
-
             list.forEach(c => {
                 const safeName = c.name.replace(/'/g, "\\'");
                 const div = document.createElement('div');
                 div.className = 'card-row';
-                
                 const effectHtml = formatEffect(c.effect);
-                const effectPart = effectHtml 
-                    ? `<div class="card-effect">${effectHtml}</div>` 
-                    : ""; 
-
-                let infoParts = [];
-                let statHtml = "";
-                let hasStat = false;
+                const effectPart = effectHtml ? `<div class="card-effect">${effectHtml}</div>` : ""; 
+                let infoParts = []; let statHtml = ""; let hasStat = false;
                 if ((c.category && c.category.includes("ユニット")) || c.atk > 0 || c.hp > 0) {
-                     statHtml = `<span class="stat-emphasis">${c.atk}/${c.hp}</span>`;
-                     hasStat = true;
+                     statHtml = `<span class="stat-emphasis">${c.atk}/${c.hp}</span>`; hasStat = true;
                 }
-
                 if (c.category) infoParts.push(c.category);
                 if (c.color) infoParts.push(c.color);
-                if (c.type && c.type !== "-" && c.type !== "‐") {
-                    infoParts.push(c.type);
-                }
-                
-                let subInfoHtml = "";
-                if (hasStat) {
-                    subInfoHtml = statHtml;
-                    if (infoParts.length > 0) {
-                        subInfoHtml += " | " + infoParts.join(" | ");
-                    }
-                } else {
-                    subInfoHtml = infoParts.join(" | ");
-                }
-
-                // ★PCなら画像クリックで追加（スマホはプレビュー機能に任せるのでここには書かない）
+                if (c.type && c.type !== "-" && c.type !== "‐") infoParts.push(c.type);
+                let subInfoHtml = hasStat ? `${statHtml} | ${infoParts.join(" | ")}` : infoParts.join(" | ");
                 const imgClickAction = mobile ? "" : `onclick="addToDeck('${safeName}')"`;
-
                 div.innerHTML = `
                     <div class="img-box" ${imgClickAction}>
                         <img src="images/${c.fileName}" onerror="this.src='https://via.placeholder.com/50x70?text=NoImg'">
@@ -701,44 +622,25 @@
         function addToDeck(name) {
             const master = MASTER_DB.find(d => d.name === name);
             const inDeck = myDeck.find(d => d.name === name);
-            if (inDeck) {
-                if (inDeck.count >= CONFIG.maxCardsInDeck) return;
-                inDeck.count++;
-            } else {
-                myDeck.push({...master, count: 1});
-            }
-            myDeck.sort((a,b) => a.id - b.id);
-            renderDeck();
+            if (inDeck) { if (inDeck.count >= CONFIG.maxCardsInDeck) return; inDeck.count++; } 
+            else { myDeck.push({...master, count: 1}); }
+            myDeck.sort((a,b) => a.id - b.id); renderDeck();
         }
 
         function renderDeck() {
-            const area = document.getElementById('deck-list');
-            area.innerHTML = '';
-            let total = 0;
-            const mobile = isMobile();
-
+            const area = document.getElementById('deck-list'); area.innerHTML = '';
+            let total = 0; const mobile = isMobile();
             myDeck.forEach(d => {
-                total += d.count;
-                const safeName = d.name.replace(/'/g, "\\'");
-                const div = document.createElement('div');
-                div.className = 'deck-item';
-                
-                // ★PCなら画像操作有効、スマホなら無効(プレビューのみ)
+                total += d.count; const safeName = d.name.replace(/'/g, "\\'");
+                const div = document.createElement('div'); div.className = 'deck-item';
                 const imgAction = mobile ? "" : `onclick="addToDeck('${safeName}')" oncontextmenu="event.preventDefault(); removeFromDeck('${safeName}')"`;
-                
-                // ★スマホなら操作ボタンを表示
                 const mobileControls = mobile ? `
                     <div class="mobile-deck-controls">
                         <button class="ctrl-btn minus" onclick="event.stopPropagation(); removeFromDeck('${safeName}')">－</button>
                         <button class="ctrl-btn plus" onclick="event.stopPropagation(); addToDeck('${safeName}')">＋</button>
                     </div>
                 ` : "";
-
-                div.innerHTML = `
-                    <div class="badge">${d.count}</div>
-                    <img src="images/${d.fileName}" ${imgAction}>
-                    ${mobileControls}
-                `;
+                div.innerHTML = `<div class="badge">${d.count}</div><img src="images/${d.fileName}" ${imgAction}>${mobileControls}`;
                 enablePreview(div.querySelector('img'), `images/${d.fileName}`);
                 area.appendChild(div);
             });
@@ -747,10 +649,7 @@
 
         function removeFromDeck(name) {
             const inDeck = myDeck.find(d => d.name === name);
-            if (inDeck) {
-                inDeck.count--;
-                if (inDeck.count <= 0) myDeck = myDeck.filter(d => d.name !== name);
-            }
+            if (inDeck) { inDeck.count--; if (inDeck.count <= 0) myDeck = myDeck.filter(d => d.name !== name); }
             renderDeck();
         }
 
@@ -792,11 +691,7 @@
             if (simDeck.length === 0) return; const card = simDeck.pop();
             const img = document.createElement('img'); img.src = `images/${card.fileName}`; img.className = 'play-card';
             enablePreview(img, `images/${card.fileName}`); 
-            // マリガン画面
-            if (!isMobile()) {
-                img.onclick = () => img.remove();
-            }
-            
+            if (!isMobile()) img.onclick = () => img.remove();
             document.getElementById('play-area').appendChild(img); updateSimCount();
         }
         function updateSimCount() { document.getElementById('sim-deck-count').textContent = simDeck.length; }
