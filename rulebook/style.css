@@ -35,8 +35,8 @@ body {
     box-sizing: border-box;
     z-index: 1000;
     transition: transform 0.3s ease;
-    flex-shrink: 0; /* サイドバーが潰れるのを防ぐ */
-    overflow-y: auto; /* メニューが縦に長い場合スクロール */
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
 .logo {
@@ -63,6 +63,20 @@ nav a {
 nav a:hover {
     background: var(--border-color);
     color: var(--accent-color);
+}
+
+/* ★追加：サイドバーの特別リンク（データベース） */
+.nav-special a {
+    color: var(--accent-color) !important;
+    border: 1px solid var(--accent-color);
+    margin-bottom: 15px;
+    text-align: center;
+    background: rgba(56, 189, 248, 0.1);
+    font-weight: bold;
+}
+.nav-special a:hover {
+    background: var(--accent-color) !important;
+    color: #000 !important;
 }
 
 /* --- 全検索エリア --- */
@@ -97,7 +111,7 @@ nav a:hover {
 .content {
     flex: 1;
     padding: 40px;
-    overflow-y: auto; /* コンテンツだけスクロール */
+    overflow-y: auto;
     height: 100vh;
     box-sizing: border-box;
 }
@@ -109,7 +123,7 @@ nav a:hover {
     margin-bottom: 30px;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 10px;
-    flex-wrap: wrap; /* 画面が狭い時に折り返す */
+    flex-wrap: wrap;
     gap: 15px;
 }
 
@@ -152,7 +166,7 @@ nav a:hover {
 .rule-card p {
     line-height: 1.6;
     font-size: 0.95rem;
-    white-space: pre-wrap; /* 改行を反映 */
+    white-space: pre-wrap;
     margin-bottom: 0;
 }
 
@@ -175,6 +189,25 @@ nav a:hover {
     opacity: 0.8;
 }
 
+/* ★追加：トップページのデータベースボタン */
+.db-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.db-button:hover {
+    background: var(--accent-color);
+    color: #0b0f19;
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
 /* --- スマホ用パーツ（初期非表示） --- */
 .mobile-header, .close-btn, .overlay {
     display: none;
@@ -190,7 +223,7 @@ nav a:hover {
    ========================================= */
 @media screen and (max-width: 768px) {
     body {
-        overflow: auto; /* スマホでは全体スクロール */
+        overflow: auto;
     }
 
     .app-container {
@@ -246,7 +279,7 @@ nav a:hover {
     }
 
     .logo {
-        display: none; /* スマホサイドバー内ではロゴを隠す（ヘッダーにあるため） */
+        display: none;
     }
 
     .close-btn {
