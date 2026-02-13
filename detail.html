@@ -10,7 +10,8 @@
         .card-image-box { flex: 0 0 auto; width: 100%; max-width: 300px; display: flex; justify-content: center; align-items: flex-start; }
         .card-image { width: 100%; height: auto; border-radius: 10px; border: 1px solid #30363d; }
         .card-info { flex: 1; min-width: 300px; }
-        h1 { margin-top: 0; border-bottom: 1px solid #30363d; padding-bottom: 10px; color: #f1c40f; }
+        h1 { margin-top: 0; margin-bottom: 5px; border-bottom: none; color: #f1c40f; }
+        .card-yomi { font-size: 0.9em; color: #8b949e; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #30363d; }
         th { color: #8b949e; width: 30%; font-weight: normal; }
@@ -67,14 +68,44 @@
                 return;
             }
 
-            // 除外する項目
-            const excludeKeys = ['補足', '画像ファイル名', 'カード名', 'ID'];
+            // 除外する項目（読みを追加）
+            const excludeKeys = ['補足', '画像ファイル名', 'カード名', 'ID', '読み'];
+            // 効果のカラム名定義
+            const effectKeys = ['効果1', '効果2', '効果3', '効果4'];
+            
+            // 読みデータを取得
+            const yomi = card['読み'] || '';
+
+            // 効果がすべてハイフンかどうかの判定
+            const isVanilla = effectKeys.every(key => !card[key] || card[key] === '-');
             
             let tableRows = '';
             for (const key in card) {
-                if (!excludeKeys.includes(key) && card[key]) {
-                    tableRows += `<tr><th>${key}</th><td>${card[key]}</td></tr>`;
+                // 除外キーに含まれる場合はスキップ
+                if (excludeKeys.includes(key)) continue;
+
+                const val = card[key];
+                
+                // 値がない場合はスキップ
+                if (!val) continue;
+
+                // 効果カラムの特殊処理
+                if (effectKeys.includes(key)) {
+                    if (isVanilla) {
+                        // 全てハイフンの場合、最初の効果キー（効果1）のタイミングで「効果：なし」を出力
+                        if (key === effectKeys[0]) {
+                            tableRows += `<tr><th>効果</th><td>なし</td></tr>`;
+                        }
+                        // それ以外の効果キー、または既に「なし」を出力済みの場合は何もしない
+                        continue;
+                    } else {
+                        // 通常の場合、値がハイフンなら表示しない
+                        if (val === '-') continue;
+                    }
                 }
+
+                // 通常出力
+                tableRows += `<tr><th>${key}</th><td>${val}</td></tr>`;
             }
             
             // 画像ファイル名の処理（拡張子補完）
@@ -87,6 +118,7 @@
                 </div>
                 <div class="card-info">
                     <h1>${card['カード名']}</h1>
+                    ${yomi ? `<div class="card-yomi">${yomi}</div>` : ''}
                     <table>${tableRows}</table>
                     <a href="javascript:window.close()" class="back-btn">× タブを閉じる</a>
                 </div>
