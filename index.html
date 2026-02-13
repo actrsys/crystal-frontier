@@ -504,20 +504,26 @@
             }
             renderDeck();
         }
+/* --- 中略（CSS部分は以前のものを引き継ぎつつ、以下の箇所のJSを差し替えてください） --- */
 
         /* -----------------------------------------
-           プレビューシステム
+           プレビューシステム（修正版）
            ----------------------------------------- */
         function setupPreview(el, src) {
             if (isMobile()) {
                 el.onclick = (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // 親要素のaddToDeckなどのイベントを邪魔しない
                     const p = document.getElementById('hover-preview');
-                    document.getElementById('preview-img').src = src;
+                    const img = document.getElementById('preview-img');
+                    const btn = document.getElementById('preview-close-btn');
+                    
+                    img.src = src;
                     p.style.display = 'flex';
                     p.style.opacity = '1';
+                    btn.style.display = 'flex'; // スマホ時は×ボタンを表示
                 };
             } else {
+                // PC版のホバー挙動
                 el.onmouseenter = (e) => {
                     hoverTimer = setTimeout(() => {
                         const p = document.getElementById('hover-preview');
@@ -532,6 +538,57 @@
                     document.getElementById('hover-preview').style.display = 'none';
                 };
             }
+        }
+
+        // プレビューを閉じる（スマホ/PC共用）
+        function closePreviewMobile() {
+            const p = document.getElementById('hover-preview');
+            const btn = document.getElementById('preview-close-btn');
+            if (p) p.style.display = 'none';
+            if (btn) btn.style.display = 'none';
+        }
+
+        /* -----------------------------------------
+           画面遷移・ナビゲーション（修正版）
+           ----------------------------------------- */
+        function showMobilePane(side) {
+            // タブ切り替え時にプレビューを閉じる
+            closePreviewMobile();
+
+            const left = document.querySelector('.left-pane') || document.getElementById('pane-l-build');
+            const right = document.querySelector('.right-pane') || document.querySelector('.right-pane:not(.left-pane)');
+            
+            // 現在アクティブなスクリーン内のパネルを取得
+            const activeScreen = document.querySelector('.screen.active');
+            const targetLeft = activeScreen.querySelector('.left-pane');
+            const targetRight = activeScreen.querySelector('.right-pane');
+
+            if (side === 'left') {
+                targetLeft.classList.add('active-pane'); 
+                targetRight.classList.remove('active-pane');
+                document.getElementById('btn-search').classList.add('active');
+                document.getElementById('btn-deck').classList.remove('active');
+            } else {
+                targetLeft.classList.remove('active-pane'); 
+                targetRight.classList.add('active-pane');
+                document.getElementById('btn-search').classList.remove('active');
+                document.getElementById('btn-deck').classList.add('active');
+            }
+        }
+
+        function switchToMulligan() {
+            closePreviewMobile(); // 画面遷移時に閉じる
+            document.getElementById('screen-builder').classList.remove('active');
+            document.getElementById('screen-mulligan').classList.add('active');
+            document.getElementById('manual-input').value = myDeck.map(d => `${d.name} x${d.count}`).join("\n");
+            if(isMobile()) showMobilePane('left');
+        }
+
+        function switchToBuilder() {
+            closePreviewMobile(); // 画面遷移時に閉じる
+            document.getElementById('screen-mulligan').classList.remove('active');
+            document.getElementById('screen-builder').classList.add('active');
+            if(isMobile()) showMobilePane('left');
         }
 
         function updatePreviewPos(e) {
@@ -662,3 +719,4 @@
     </script>
 </body>
 </html>
+
