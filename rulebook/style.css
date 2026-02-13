@@ -1,0 +1,112 @@
+:root {
+    --bg-color: #0b0f19;
+    --sidebar-color: #111827;
+    --accent-color: #38bdf8; /* クリスタル・ブルー */
+    --text-color: #e2e8f0;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(56, 189, 248, 0.3);
+}
+
+body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* サイドバー */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-color);
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+}
+
+.logo span { color: #fff; }
+
+nav ul { list-style: none; padding: 0; }
+nav li { margin: 10px 0; }
+nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
+    display: block;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+nav a:hover {
+    background: var(--border-color);
+    color: var(--accent-color);
+}
+
+/* メインコンテンツ */
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+#searchInput {
+    background: var(--sidebar-color);
+    border: 1px solid var(--border-color);
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    outline: none;
+}
+
+/* データカードのデザイン */
+.rule-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-color);
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.5s ease;
+}
+
+.rule-card h3 {
+    margin-top: 0;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.rule-card p {
+    line-height: 1.6;
+    font-size: 0.95rem;
+    white-space: pre-wrap; /* 改行を反映 */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
