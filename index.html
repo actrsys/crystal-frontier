@@ -181,6 +181,7 @@
                 flex-direction: column; 
                 height: auto;
                 flex-grow: 1;
+                /* 固定ナビの分だけ下に余白を作る */
                 padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
                 width: 100%;
             }
@@ -189,14 +190,15 @@
             .left-pane.active-pane, .right-pane.active-pane { display: flex; }
             .gutter { display: none !important; }
 
-            /* ★修正: 詳細条件エリアにスクロール機能を追加 */
+            /* ★修正: 画面いっぱいまで広がるように修正 */
             #advanced-filters { 
                 display: none; 
                 border-top: none; 
                 margin-top: -5px;
-                max-height: 50vh;  /* 画面の半分まで */
-                overflow-y: auto;  /* はみ出たらスクロール */
-                overscroll-behavior: contain; /* スクロール連鎖防止 */
+                /* 画面高さ(100dvh) - ヘッダー・検索窓・ボタン・下部ナビ等の高さ(約180px) */
+                max-height: calc(100dvh - 180px);
+                overflow-y: auto;  
+                overscroll-behavior: contain; 
             }
             
             #filter-toggle-btn { display: block; width: 100%; padding: 8px; margin-bottom: 5px; background: #21262d; border: 1px solid var(--border-col); color: var(--text-sub); cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 4px; }
@@ -298,10 +300,10 @@
                 
                 <label>レアリティ (複数選択可)</label>
                 <div class="check-group" id="grp-rare">
-                    <label class="check-label"><input type="checkbox" value="コモン" onchange="filterCards()"> C</label>
-                    <label class="check-label"><input type="checkbox" value="アンコモン" onchange="filterCards()"> UC</label>
-                    <label class="check-label"><input type="checkbox" value="レア" onchange="filterCards()"> R</label>
-                    <label class="check-label"><input type="checkbox" value="レジェンド" onchange="filterCards()"> L</label>
+                    <label class="check-label"><input type="checkbox" value="コモン" onchange="filterCards()">コモン</label>
+                    <label class="check-label"><input type="checkbox" value="アンコモン" onchange="filterCards()">アンコモン</label>
+                    <label class="check-label"><input type="checkbox" value="レア" onchange="filterCards()">レア</label>
+                    <label class="check-label"><input type="checkbox" value="レジェンド" onchange="filterCards()">レジェンド</label>
                 </div>
                 
                 <label>ATK / HP</label>
@@ -414,26 +416,17 @@
             window.open(url, '_blank');
         }
 
-        // ★追加: 検索条件リセット機能
+        // リセット機能
         function resetConditions() {
-            // テキストリセット
             document.getElementById('q-text').value = '';
-            
-            // 数値入力リセット
             ['q-cost-min', 'q-cost-max', 'q-atk-min', 'q-atk-max', 'q-hp-min', 'q-hp-max'].forEach(id => {
                 document.getElementById(id).value = '';
             });
-
-            // チェックボックスリセット (すべてOFFにする)
             document.querySelectorAll('#advanced-filters input[type="checkbox"]').forEach(el => {
                 el.checked = false;
             });
-
-            // ソート順を初期値に
             document.getElementById('q-sort-key').value = 'id';
             document.getElementById('q-sort-dir').value = '1';
-
-            // 再検索
             filterCards();
         }
 
@@ -596,22 +589,13 @@
             };
 
             let filtered = MASTER_DB.filter(c => {
-                // 1. 基本的なトークン非表示ルール
                 if (c.isToken && !showToken) return false;
-
-                // 2. フィルタリング動作
                 if (q.cats.length > 0 || showToken) {
                     let matchCat = false;
-                    
-                    if (q.cats.some(cat => c.category.includes(cat))) {
-                        matchCat = true;
-                    }
-                    if (showToken && c.isToken) {
-                        matchCat = true;
-                    }
+                    if (q.cats.some(cat => c.category.includes(cat))) matchCat = true;
+                    if (showToken && c.isToken) matchCat = true;
                     if (!matchCat) return false;
                 }
-                
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
                 if (q.cols.length > 0 && !q.cols.some(col => c.color.includes(col))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
@@ -626,21 +610,15 @@
             
             filtered.sort((a, b) => {
                 let valA, valB;
-                
                 if (sortKey === 'name') {
-                    valA = a.reading || a.name; 
-                    valB = b.reading || b.name;
+                    valA = a.reading || a.name; valB = b.reading || b.name;
                     return String(valA).localeCompare(String(valB), 'ja') * sortDir;
                 } else if (sortKey === 'id') {
                     valA = a.id; valB = b.id;
                 } else {
-                    valA = a[sortKey] || 0; 
-                    valB = b[sortKey] || 0;
+                    valA = a[sortKey] || 0; valB = b[sortKey] || 0;
                 }
-                
-                if (valA !== valB) {
-                    return (valA - valB) * sortDir;
-                }
+                if (valA !== valB) return (valA - valB) * sortDir;
                 return a.id - b.id;
             });
 
