@@ -647,21 +647,32 @@
             filterCards();
         }
 
+// フィルタリング機能（AND検索対応版）
         function filterCards() {
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked`)).map(e => e.value);
-            const getNum = (id, defaultVal) => {
-                const val = document.getElementById(id).value;
-                return val === "" ? defaultVal : parseInt(val);
+            const getNum = (id, def) => {
+                const v = document.getElementById(id).value;
+                return v === "" ? def : parseInt(v);
             };
+
+            // ★変更点: 入力テキストをスペース（半角・全角）で分割してリスト化
+            const rawText = document.getElementById('q-text').value.toLowerCase().trim();
+            const keywords = rawText ? rawText.split(/[\s　]+/) : []; 
+
             const q = {
-                text: document.getElementById('q-text').value.toLowerCase().trim(),
+                keywords: keywords, // 検索語句のリスト
                 cats: getChecked('grp-cat'), cols: getChecked('grp-col'), rares: getChecked('grp-rare'),
                 cMin: getNum('q-cost-min', 0), cMax: getNum('q-cost-max', CONFIG.defaultCostMax),
                 aMin: getNum('q-atk-min', 0), aMax: getNum('q-atk-max', CONFIG.defaultStatMax),
                 hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
+
             let filtered = MASTER_DB.filter(c => {
-                if (!c.searchText.includes(q.text)) return false;
+                // ★変更点: リスト内のすべての単語が含まれているかチェック (AND検索)
+                // キーワードが一つでもある場合、すべてのキーワードがsearchTextに含まれていないと除外
+                if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
+
+                // 以下の条件は変更なし
                 if (q.cats.length > 0 && !q.cats.some(cat => c.category.includes(cat))) return false;
                 if (q.cols.length > 0 && !q.cols.some(col => c.color.includes(col))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
@@ -670,6 +681,7 @@
                 if (c.hp < q.hMin || c.hp > q.hMax) return false;
                 return true;
             });
+
             const sortKey = document.getElementById('q-sort-key').value;
             const sortDir = parseInt(document.getElementById('q-sort-dir').value);
             filtered.sort((a, b) => {
@@ -841,6 +853,7 @@
     </script>
 </body>
 </html>
+
 
 
 
