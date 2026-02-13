@@ -4,24 +4,26 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow, noarchive, noimageai">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ルールブック | クリフロ-Crystal Frontier-</title>
+    <title>Crystal Frontier - Official Rules</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
     <div class="mobile-header">
         <button id="menu-toggle" aria-label="メニューを開く">☰</button>
-        <span class="mobile-logo" onclick="resetHome()">CRYSTAL<span>FRONTIER</span></span>
+        <span class="mobile-logo" onclick="resetHome()">Crystal<span>Frontier</span></span>
     </div>
 
     <div class="app-container">
         <div id="overlay" class="overlay"></div>
 
         <aside class="sidebar" id="sidebar">
-            <button id="menu-close" class="close-btn">×</button>
+            <div class="mobile-sidebar-header">
+                <button id="menu-close" class="close-btn">×</button>
+            </div>
             
             <div class="sidebar-scroll-area">
-                <h1 class="logo" onclick="resetHome()" style="cursor: pointer;">Crystal<span>Frontier</span></h1>
+                <h1 class="logo" onclick="resetHome()" style="cursor: pointer;">CRYSTAL<span>FRONTIER</span></h1>
                 
                 <div class="global-search-area">
                     <input type="text" id="globalSearchInput" placeholder="全ルールから検索..." onkeypress="handleGlobalSearch(event)">
