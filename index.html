@@ -311,8 +311,8 @@
                     <label class="check-label"><input type="checkbox" value="青" onchange="filterCards()"> 青</label>
                     <label class="check-label"><input type="checkbox" value="白" onchange="filterCards()"> 白</label>
                     <label class="check-label"><input type="checkbox" value="黒" onchange="filterCards()"> 黒</label>
-                    <label class="check-label"><input type="checkbox" value="無" onchange="filterCards()"> 無</label>
-                    <label class="check-label"><input type="checkbox" value="多" onchange="filterCards()"> 多</label>
+                    <label class="check-label"><input type="checkbox" value="無" onchange="filterCards()"> 無色</label>
+                    <label class="check-label"><input type="checkbox" value="多" onchange="filterCards()"> 多色</label>
                 </div>
 
                 <label>コスト</label>
@@ -629,14 +629,16 @@
                 hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
 
+            // 色フィルターの特別処理：多色と単色を分離する
+            const reqMulti = q.cols.includes("多");
+            const reqSpecificColors = q.cols.filter(c => c !== "多");
+
             let filtered = MASTER_DB.filter(c => {
                 // 【1. トークンの排他制御】
                 if (showToken) {
-                    // トークン表示ONの場合: トークン以外は隠す
-                    if (!c.isToken) return false;
+                    if (!c.isToken) return false; // トークン以外は隠す
                 } else {
-                    // トークン表示OFFの場合: トークンは隠す
-                    if (c.isToken) return false;
+                    if (c.isToken) return false; // トークンは隠す
                 }
 
                 // 【2. エピック判定】
@@ -645,15 +647,39 @@
                 if (nonEpicOnly && isEpic) return false;
 
                 // 【3. 分類判定】
-                // 選択されたカテゴリがあれば、そのいずれかを含むかチェック
-                // ※トークンONの時に「ユニット」を選んだ場合は「トークン・ユニット」などがヒットする
                 if (q.cats.length > 0) {
                     if (!q.cats.some(cat => c.category.includes(cat))) return false;
                 }
                 
-                // 【4. その他のフィルター】
+                // 【4. 色判定（改修版）】
+                // 多色カードであるか？（文字数が2以上 OR 従来の「多」表記）
+                const isCardMulti = (c.color.length > 1) || (c.color === "多");
+
+                if (reqMulti) {
+                    // 「多」ボタンがアクティブな場合
+                    
+                    // A. まずカード自体が多色でなければならない
+                    if (!isCardMulti) return false;
+                    
+                    // B. 他の色（赤など）もアクティブな場合、その色の「いずれか」を含んでいる必要がある
+                    // 例: 「赤」「多」選択 -> 赤を含む多色
+                    // 例: 「赤」「緑」「多」選択 -> 赤または緑を含む多色
+                    if (reqSpecificColors.length > 0) {
+                        if (!reqSpecificColors.some(col => c.color.includes(col))) return false;
+                    }
+                    // 他に色が選択されていなければ、すべての多色を表示（何もしない）
+                } else {
+                    // 「多」ボタンが非アクティブな場合
+                    
+                    // 具体的な色指定がある場合のみ従来のOR検索
+                    // 例: 「赤」選択 -> 赤単色、赤緑、赤白などがヒット（多色も含むが多色限定ではない）
+                    if (reqSpecificColors.length > 0) {
+                        if (!reqSpecificColors.some(col => c.color.includes(col))) return false;
+                    }
+                }
+
+                // 【5. その他のフィルター】
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
-                if (q.cols.length > 0 && !q.cols.some(col => c.color.includes(col))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
                 if (c.atk < q.aMin || c.atk > q.aMax) return false;
