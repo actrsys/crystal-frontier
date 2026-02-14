@@ -2,11 +2,12 @@
 const fileMap = [
     { file: 'cards.csv', name: 'カードの種類と領域' },
     { file: 'turns.csv', name: 'ターンの流れ' },
-    { file: 'terms.csv', name: '用語集' },
+    { file: 'terms.csv', name: '用語' },
     { file: 'keywords.csv', name: 'キーワード能力' },
     { file: 'processes.csv', name: 'キーワード処理' },
     { file: 'abilities.csv', name: '能力語' },
     { file: 'counters.csv', name: 'カウンター' },
+    { file: 'timing.csv', name: '優先権とタイミング' },
     { file: 'otherrules.csv', name: 'その他のルール' }
 ];
 
