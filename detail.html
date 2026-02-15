@@ -8,19 +8,20 @@
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { display: flex; flex-wrap: wrap; max-width: 800px; width: 100%; gap: 20px; background: #161b22; padding: 20px; border-radius: 8px; border: 1px solid #30363d; box-sizing: border-box; }
-        .card-image-box { flex: 0 0 auto; width: 100%; max-width: 300px; display: flex; justify-content: center; align-items: flex-start; }
-        .card-image { width: 100%; height: auto; border-radius: 10px; border: 1px solid #30363d; }
+        .card-image-box { flex: 0 0 auto; width: 100%; max-width: 300px; display: flex; flex-direction: column; align-items: center; }
+        .card-image { width: 100%; height: auto; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 10px; }
+        .token-area { width: 100%; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #30363d; }
+        .token-title { font-size: 0.85em; color: #8b949e; text-align: center; margin-bottom: 10px; font-weight: bold; }
+        .token-image { width: 85%; height: auto; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 10px; opacity: 0.9; transition: opacity 0.2s; }
+        .token-image:hover { opacity: 1; }
         .card-info { flex: 1; min-width: 300px; }
         h1 { margin-top: 0; margin-bottom: 5px; border-bottom: none; color: #f1c40f; }
         .card-yomi { font-size: 0.9em; color: #8b949e; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #30363d; }
         th { color: #8b949e; width: 30%; font-weight: normal; }
-        td { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.6; } /* アイコン用にline-height調整 */
-        
-        /* アイコン用スタイル追加 */
+        td { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.6; }
         .inline-icon { height: 1.2em; width: auto; vertical-align: text-bottom; margin: 0 2px; display: inline-block; }
-
         .back-btn { margin-top: 20px; display: inline-block; color: #58a6ff; text-decoration: none; border: 1px solid #30363d; padding: 10px 20px; border-radius: 6px; background: #21262d; }
         .back-btn:hover { background: #30363d; }
         .error { color: #ff7b72; font-weight: bold; }
@@ -32,7 +33,6 @@
     const CSV_PATH = 'card_list.csv'; 
     function getParam(name) { return new URLSearchParams(window.location.search).get(name); }
     
-    // index.htmlと同じ、クォート対応のCSVパーサー
     function parseCSV(text) {
         const lines = text.split(/\r?\n/);
         const headers = lines[0].split(',').map(h => h.trim());
@@ -53,16 +53,12 @@
         return result;
     }
 
-    // テキスト内の(1)や(赤)などを画像タグに変換する関数
     function formatText(text) {
         if (!text) return "";
-        // 全角括弧を半角に正規化
         let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
-        // 括弧内の文字列を抽出して画像パスに置換
         return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
             const cleanContent = content.trim();
             const safeMatch = match.replace(/"/g, '&quot;');
-            // index.htmlと同様のパス構成を使用
             return `<img src="images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
         });
     }
@@ -88,36 +84,24 @@
 
             const excludeKeys = ['補足', '画像ファイル名', 'カード名', 'ID', '読み'];
             const effectKeys = ['効果1', '効果2', '効果3', '効果4'];
-            
-            const yomi = card['読み'] || '';
-            // 効果スロットがすべて空またはハイフンの場合をバニラと判定
             const isVanilla = effectKeys.every(key => !card[key] || card[key] === '-');
+            
+            // 効果テキストの連結（トークン検索用）
+            const combinedEffects = effectKeys.map(k => card[k] || '').join('\n');
             
             let tableRows = '';
             for (const key in card) {
                 if (excludeKeys.includes(key)) continue;
-
                 const val = card[key];
-
-                // --- 表示判定ロジックの修正 ---
                 if (effectKeys.includes(key)) {
                     if (isVanilla) {
-                        // バニラカードの場合、最初の効果スロットのタイミングで「なし」を表示
-                        if (key === effectKeys[0]) {
-                            tableRows += `<tr><th>効果</th><td>なし</td></tr>`;
-                        }
-                        continue; // 残りの効果スロットはスキップ
+                        if (key === effectKeys[0]) tableRows += `<tr><th>効果</th><td>なし</td></tr>`;
+                        continue;
                     }
-                    // 効果があるカードの場合、空欄やハイフンの項目は表示しない
                     if (!val || val === '-') continue;
                 } else {
-                    // ATK, HP, タイプ, ユニット等の一般項目
-                    // 空欄、もしくはハイフンの場合は項目自体を表示しない
                     if (!val || val === '-') continue;
                 }
-                // ----------------------------
-
-                // テキスト置換処理を適用
                 const formattedVal = formatText(val);
                 tableRows += `<tr><th>${key}</th><td>${formattedVal}</td></tr>`;
             }
@@ -125,13 +109,45 @@
             let imgName = card['画像ファイル名'] || '';
             if(imgName && !imgName.includes('.')) imgName += '.png';
 
+            // --- トークン抽出ロジック ---
+            const tokenList = cards.filter(c => c['分類'] && c['分類'].includes('トークン'));
+            const seenTokenImages = new Set();
+            const foundTokens = tokenList.filter(t => {
+                const tName = t['カード名'];
+                // トークン名が効果内に含まれるか、あるいは末尾の数字を除いた名称が含まれるかチェック
+                const baseName = tName.replace(/[0-9０-９]$/, '');
+                const isMatch = combinedEffects.includes(tName) || (baseName.length > 2 && combinedEffects.includes(baseName));
+                
+                if (isMatch) {
+                    const tImg = t['画像ファイル名'];
+                    if (!seenTokenImages.has(tImg)) {
+                        seenTokenImages.add(tImg);
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            let tokenHtml = '';
+            if (foundTokens.length > 0) {
+                tokenHtml = `<div class="token-area"><div class="token-title">関連トークン</div>`;
+                foundTokens.forEach(t => {
+                    let tImg = t['画像ファイル名'] || '';
+                    if (tImg && !tImg.includes('.')) tImg += '.png';
+                    tokenHtml += `<img src="images/${tImg}" alt="${t['カード名']}" class="token-image" title="${t['カード名']}">`;
+                });
+                tokenHtml += `</div>`;
+            }
+            // --------------------------
+
             contentDiv.innerHTML = `
                 <div class="card-image-box">
                     <img src="images/${imgName}" alt="${card['カード名']}" class="card-image" onerror="this.style.display='none'">
+                    ${tokenHtml}
                 </div>
                 <div class="card-info">
                     <h1>${card['カード名']}</h1>
-                    ${yomi ? `<div class="card-yomi">${yomi}</div>` : ''}
+                    ${card['読み'] ? `<div class="card-yomi">${card['読み']}</div>` : ''}
                     <table>${tableRows}</table>
                     <a href="javascript:window.close()" class="back-btn">× タブを閉じる</a>
                 </div>
