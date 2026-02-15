@@ -82,7 +82,7 @@ function resetHome() {
             <p>左のメニューから項目を選択するか、サイドバーからキーワードを全検索してください。</p>
             
             <br>
-            <a href="https://crystalfrontier.github.io/cf-builder/" target="_blank" class="db-button">
+            <a href="https://actrsys.github.io/crystal-frontier/" target="_blank" class="db-button">
                 カードデータベースを開く ↗
             </a>
         </div>
