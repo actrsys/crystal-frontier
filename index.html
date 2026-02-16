@@ -418,7 +418,7 @@
 
         let MASTER_DB = [], myDeck = [], simDeck = [], hoverTimer = null;
         let currentSearchResults = []; // フィルタリングされた全カードを保持
-        let currentDisplayLimit = 60;  // 現在表示している枚数上限
+        let currentDisplayLimit = 50;  // ★修正:初期表示枚数を50に設定
 
         const isMobile = () => window.innerWidth <= 768;
 
@@ -628,7 +628,7 @@
                 hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
 
-            // ★初期状態判定：何も条件がない場合は検索結果を空にする
+            // 初期状態判定
             const isDefaultState = (
                 q.keywords.length === 0 && q.cats.length === 0 && q.cols.length === 0 && q.rares.length === 0 &&
                 !showToken && !epicOnly && !nonEpicOnly &&
@@ -693,9 +693,9 @@
                 return a.id - b.id;
             });
 
-            // ★フィルタリング結果をグローバルに保存し、表示上限をリセットして描画
+            // ★修正: フィルタリング結果保存時に初期表示枚数を50にリセット
             currentSearchResults = filtered;
-            currentDisplayLimit = 60;
+            currentDisplayLimit = 50;
             renderResults(); 
         }
 
@@ -724,7 +724,7 @@
 
             const mobile = isMobile();
             
-            // ★現在の上限枚数まで切り出す
+            // 現在の上限枚数まで切り出す
             const displayList = list.slice(0, currentDisplayLimit);
             
             displayList.forEach(c => {
@@ -771,7 +771,7 @@
                 area.appendChild(div);
             });
 
-            // ★「もっと見る」ボタンの表示判定
+            // 「もっと見る」ボタンの表示判定
             if (list.length > currentDisplayLimit) {
                 const remaining = list.length - currentDisplayLimit;
                 
@@ -786,7 +786,7 @@
                 loadBtn.innerHTML = `▼ さらに表示する (残り ${remaining} 件)`;
                 
                 loadBtn.onclick = function() {
-                    currentDisplayLimit += 60; // 60件追加して
+                    currentDisplayLimit += 50; // ★修正: 50件追加するように変更
                     renderResults(); // 再描画
                 };
 
