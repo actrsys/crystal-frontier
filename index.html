@@ -408,6 +408,7 @@
     </div>
 
     <script>
+        // 設定およびグローバル変数の追加
         const CONFIG = {
             maxCardsInDeck: 4,
             defaultHandSize: 7,
@@ -416,6 +417,9 @@
         };
 
         let MASTER_DB = [], myDeck = [], simDeck = [], hoverTimer = null;
+        let currentSearchResults = []; // フィルタリングされた全カードを保持
+        let currentDisplayLimit = 60;  // 現在表示している枚数上限
+
         const isMobile = () => window.innerWidth <= 768;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -608,16 +612,11 @@
         }
 
         function filterCards() {
-            // トークンチェックボックスは個別に取得し、通常のカテゴリリスト(grp-cat)からは除外される
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked:not(#chk-token)`)).map(e => e.value);
             const getNum = (id, def) => { const v = document.getElementById(id).value; return v === "" ? def : parseInt(v); };
-            
             const showToken = document.getElementById('chk-token').checked;
-            
-            // エピックフィルターの状態取得
             const epicOnly = document.getElementById('chk-epic').checked;
             const nonEpicOnly = document.getElementById('chk-non-epic').checked;
-
             const rawText = document.getElementById('q-text').value.toLowerCase().trim();
             const keywords = rawText ? rawText.split(/[\s　]+/) : []; 
 
@@ -629,55 +628,45 @@
                 hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
 
-            // 色フィルターの特別処理：多色と単色を分離する
+            // ★初期状態判定：何も条件がない場合は検索結果を空にする
+            const isDefaultState = (
+                q.keywords.length === 0 && q.cats.length === 0 && q.cols.length === 0 && q.rares.length === 0 &&
+                !showToken && !epicOnly && !nonEpicOnly &&
+                q.cMin === 0 && q.cMax === CONFIG.defaultCostMax &&
+                q.aMin === 0 && q.aMax === CONFIG.defaultStatMax &&
+                q.hMin === 0 && q.hMax === CONFIG.defaultStatMax
+            );
+
+            const area = document.getElementById('search-results'); 
+
+            if (isDefaultState) {
+                currentSearchResults = []; 
+                area.innerHTML = '<div style="padding:20px; text-align:center; color:#555;">キーワードを入力するか、条件を指定してください</div>';
+                return;
+            }
+
             const reqMulti = q.cols.includes("多");
             const reqSpecificColors = q.cols.filter(c => c !== "多");
 
             let filtered = MASTER_DB.filter(c => {
-                // 【1. トークンの排他制御】
-                if (showToken) {
-                    if (!c.isToken) return false; // トークン以外は隠す
-                } else {
-                    if (c.isToken) return false; // トークンは隠す
-                }
+                if (showToken) { if (!c.isToken) return false; } else { if (c.isToken) return false; }
 
-                // 【2. エピック判定】
                 const isEpic = c.category.includes("エピック");
                 if (epicOnly && !isEpic) return false;
                 if (nonEpicOnly && isEpic) return false;
 
-                // 【3. 分類判定】
                 if (q.cats.length > 0) {
                     if (!q.cats.some(cat => c.category.includes(cat))) return false;
                 }
                 
-                // 【4. 色判定（改修版）】
-                // 多色カードであるか？（文字数が2以上 OR 従来の「多」表記）
                 const isCardMulti = (c.color.length > 1) || (c.color === "多");
-
                 if (reqMulti) {
-                    // 「多」ボタンがアクティブな場合
-                    
-                    // A. まずカード自体が多色でなければならない
                     if (!isCardMulti) return false;
-                    
-                    // B. 他の色（赤など）もアクティブな場合、その色「全て」を含んでいる必要がある
-                    // 修正点：some ➔ every に変更し、AND検索化
-                    if (reqSpecificColors.length > 0) {
-                        if (!reqSpecificColors.every(col => c.color.includes(col))) return false;
-                    }
-                    // 他に色が選択されていなければ、すべての多色を表示（何もしない）
+                    if (reqSpecificColors.length > 0 && !reqSpecificColors.every(col => c.color.includes(col))) return false;
                 } else {
-                    // 「多」ボタンが非アクティブな場合
-                    
-                    // 具体的な色指定がある場合のみ従来のOR検索
-                    // 例: 「赤」選択 -> 赤単色、赤緑、赤白などがヒット（多色も含むが多色限定ではない）
-                    if (reqSpecificColors.length > 0) {
-                        if (!reqSpecificColors.some(col => c.color.includes(col))) return false;
-                    }
+                    if (reqSpecificColors.length > 0 && !reqSpecificColors.some(col => c.color.includes(col))) return false;
                 }
 
-                // 【5. その他のフィルター】
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
@@ -692,25 +681,22 @@
             
             filtered.sort((a, b) => {
                 let valA, valB;
-                
                 if (sortKey === 'name') {
-                    valA = a.reading || a.name; 
-                    valB = b.reading || b.name;
+                    valA = a.reading || a.name; valB = b.reading || b.name;
                     return String(valA).localeCompare(String(valB), 'ja') * sortDir;
                 } else if (sortKey === 'id') {
                     valA = a.id; valB = b.id;
                 } else {
-                    valA = a[sortKey] || 0; 
-                    valB = b[sortKey] || 0;
+                    valA = a[sortKey] || 0; valB = b[sortKey] || 0;
                 }
-                
-                if (valA !== valB) {
-                    return (valA - valB) * sortDir;
-                }
+                if (valA !== valB) return (valA - valB) * sortDir;
                 return a.id - b.id;
             });
 
-            renderResults(filtered);
+            // ★フィルタリング結果をグローバルに保存し、表示上限をリセットして描画
+            currentSearchResults = filtered;
+            currentDisplayLimit = 60;
+            renderResults(); 
         }
 
         function formatEffect(text) {
@@ -724,12 +710,24 @@
             });
         }
 
-        function renderResults(list) {
+        function renderResults() {
             const area = document.getElementById('search-results'); 
             area.innerHTML = '';
+            
+            // 引数ではなくグローバル変数を使用
+            const list = currentSearchResults;
+
+            if (list.length === 0) {
+                area.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">該当するカードがありません</div>';
+                return;
+            }
+
             const mobile = isMobile();
             
-            list.forEach(c => {
+            // ★現在の上限枚数まで切り出す
+            const displayList = list.slice(0, currentDisplayLimit);
+            
+            displayList.forEach(c => {
                 const safeName = c.name.replace(/'/g, "\\'");
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
@@ -772,6 +770,29 @@
                 enablePreview(div.querySelector('.img-box img'), `images/${c.fileName}`);
                 area.appendChild(div);
             });
+
+            // ★「もっと見る」ボタンの表示判定
+            if (list.length > currentDisplayLimit) {
+                const remaining = list.length - currentDisplayLimit;
+                
+                const btnArea = document.createElement('div');
+                btnArea.style.padding = "10px";
+                btnArea.style.textAlign = "center";
+
+                const loadBtn = document.createElement('button');
+                loadBtn.className = "btn btn-blue";
+                loadBtn.style.width = "100%";
+                loadBtn.style.padding = "10px";
+                loadBtn.innerHTML = `▼ さらに表示する (残り ${remaining} 件)`;
+                
+                loadBtn.onclick = function() {
+                    currentDisplayLimit += 60; // 60件追加して
+                    renderResults(); // 再描画
+                };
+
+                btnArea.appendChild(loadBtn);
+                area.appendChild(btnArea);
+            }
         }
 
         function addToDeck(name) {
