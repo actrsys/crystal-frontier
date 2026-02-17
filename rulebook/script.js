@@ -82,7 +82,7 @@ function resetHome() {
             <p>左のメニューから項目を選択するか、サイドバーからキーワードを全検索してください。</p>
             
             <br>
-            <a href="https://actrsys.github.io/crystal-frontier/" target="_blank" class="db-button">
+            <a href="../index.html" target="_blank" class="db-button">
                 カードデータベースを開く ↗
             </a>
         </div>
@@ -157,23 +157,17 @@ function executeGlobalSearch() {
 
 /**
  * テキスト内の (1) や (赤) などを画像アイコンに変換する
- * 修正：入れ子構造（例の中にアイコンがある場合など）で誤爆しないよう正規表現を改善
  */
 function formatEffect(text) {
     if (!text) return "";
     // 全角括弧を半角に統一
     let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
     
-    /**
-     * 正規表現の修正点: \(([^()]{1,15})\)
-     * [^)] ではなく [^()] とすることで、「閉じ括弧ではない」かつ「開き括弧でもない」文字を対象にします。
-     * これにより、(例：(X)(赤)) のような構造において、外側の (例：...(赤)) が一つの大きな括弧として
-     * 誤認識（最長一致の副作用）されるのを防ぎ、内側の (X) や (赤) を正確に抽出できます。
-     */
     return normalized.replace(/\(([^()]{1,15})\)/g, (match, content) => {
         const cleanContent = content.trim();
         const safeMatch = match.replace(/"/g, '&quot;');
-        return `<img src="../images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
+        // 変更: ../data/images/icons/
+        return `<img src="../data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
     });
 }
 
@@ -199,9 +193,7 @@ function renderData(data, showCategory = false) {
                 ? `<span class="category-tag">${item._categoryName}</span>` 
                 : '';
 
-            // 項目名にも formatEffect を適用するように変更
             const titleHtml = name ? `<h3>${formatEffect(name)}</h3>` : '';
-            
             const descHtml = desc ? `<p>${formatEffect(desc)}</p>` : '';
 
             card.innerHTML = `

@@ -30,7 +30,8 @@
 <body>
 <div id="content" class="container"><p>読み込み中...</p></div>
 <script>
-    const CSV_PATH = 'card_list.csv'; 
+    // 変更: data/card_list.csv
+    const CSV_PATH = 'data/card_list.csv'; 
     function getParam(name) { return new URLSearchParams(window.location.search).get(name); }
     
     function parseCSV(text) {
@@ -59,7 +60,8 @@
         return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
             const cleanContent = content.trim();
             const safeMatch = match.replace(/"/g, '&quot;');
-            return `<img src="images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
+            // 変更: data/images/icons/
+            return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
         });
     }
 
@@ -134,7 +136,8 @@
                 foundTokens.forEach(t => {
                     let tImg = t['画像ファイル名'] || '';
                     if (tImg && !tImg.includes('.')) tImg += '.png';
-                    tokenHtml += `<img src="images/${tImg}" alt="${t['カード名']}" class="token-image" title="${t['カード名']}">`;
+                    // 変更: data/images/
+                    tokenHtml += `<img src="data/images/${tImg}" alt="${t['カード名']}" class="token-image" title="${t['カード名']}">`;
                 });
                 tokenHtml += `</div>`;
             }
@@ -142,7 +145,7 @@
 
             contentDiv.innerHTML = `
                 <div class="card-image-box">
-                    <img src="images/${imgName}" alt="${card['カード名']}" class="card-image" onerror="this.style.display='none'">
+                    <img src="data/images/${imgName}" alt="${card['カード名']}" class="card-image" onerror="this.style.display='none'">
                     ${tokenHtml}
                 </div>
                 <div class="card-info">
