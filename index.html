@@ -256,6 +256,20 @@
             .nav-links a { font-size: 0.8rem; padding: 4px 8px; }
         }
         a[target="_blank"]::after { content: " ↗"; font-weight: bold; margin-left: 2px; }
+        
+        /* ページネーションボタンエリア */
+        .load-more-area {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid var(--border-col);
+            background: var(--bg-panel);
+        }
+        .empty-message {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -416,6 +430,12 @@
         };
 
         let MASTER_DB = [], myDeck = [], simDeck = [], hoverTimer = null;
+        
+        // 【追加機能用変数】
+        let currentFilteredList = []; // 現在のフィルター結果を保持
+        let currentDisplayLimit = 50; // 現在表示している枚数の上限
+        const LOAD_STEP = 50;         // 追加で表示する枚数
+
         const isMobile = () => window.innerWidth <= 768;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -424,7 +444,6 @@
             updateMobileNavLabels('builder');
             showMobilePane('left'); 
 
-            // 変更: data/card_list.csv
             fetch('data/card_list.csv')
                 .then(response => {
                     if (!response.ok) throw new Error("CSVが見つかりません");
@@ -609,13 +628,10 @@
         }
 
         function filterCards() {
-            // トークンチェックボックスは個別に取得し、通常のカテゴリリスト(grp-cat)からは除外される
             const getChecked = (id) => Array.from(document.querySelectorAll(`#${id} input:checked:not(#chk-token)`)).map(e => e.value);
             const getNum = (id, def) => { const v = document.getElementById(id).value; return v === "" ? def : parseInt(v); };
             
             const showToken = document.getElementById('chk-token').checked;
-            
-            // エピックフィルターの状態取得
             const epicOnly = document.getElementById('chk-epic').checked;
             const nonEpicOnly = document.getElementById('chk-non-epic').checked;
 
@@ -630,55 +646,61 @@
                 hMin: getNum('q-hp-min', 0), hMax: getNum('q-hp-max', CONFIG.defaultStatMax)
             };
 
-            // 色フィルターの特別処理：多色と単色を分離する
+            // 【デフォルト非表示の判定】
+            // テキスト入力、チェックボックス、数値変更のいずれも行われていない場合は「空の検索」とみなす
+            const isDefaultRanges = 
+                q.cMin === 0 && q.cMax === CONFIG.defaultCostMax &&
+                q.aMin === 0 && q.aMax === CONFIG.defaultStatMax &&
+                q.hMin === 0 && q.hMax === CONFIG.defaultStatMax;
+
+            const isSearchActive = 
+                rawText !== "" || 
+                q.cats.length > 0 || 
+                q.cols.length > 0 || 
+                q.rares.length > 0 || 
+                showToken || 
+                epicOnly || 
+                nonEpicOnly || 
+                !isDefaultRanges;
+
+            // 検索条件が一切ない場合は結果を空にする
+            if (!isSearchActive) {
+                currentFilteredList = [];
+                renderResults([], true); // メッセージのみ表示
+                return;
+            }
+
             const reqMulti = q.cols.includes("多");
             const reqSpecificColors = q.cols.filter(c => c !== "多");
 
             let filtered = MASTER_DB.filter(c => {
-                // 【1. トークンの排他制御】
                 if (showToken) {
-                    if (!c.isToken) return false; // トークン以外は隠す
+                    if (!c.isToken) return false;
                 } else {
-                    if (c.isToken) return false; // トークンは隠す
+                    if (c.isToken) return false;
                 }
 
-                // 【2. エピック判定】
                 const isEpic = c.category.includes("エピック");
                 if (epicOnly && !isEpic) return false;
                 if (nonEpicOnly && isEpic) return false;
 
-                // 【3. 分類判定】
                 if (q.cats.length > 0) {
                     if (!q.cats.some(cat => c.category.includes(cat))) return false;
                 }
                 
-                // 【4. 色判定（改修版）】
-                // 多色カードであるか？（文字数が2以上 OR 従来の「多」表記）
                 const isCardMulti = (c.color.length > 1) || (c.color === "多");
 
                 if (reqMulti) {
-                    // 「多」ボタンがアクティブな場合
-                    
-                    // A. まずカード自体が多色でなければならない
                     if (!isCardMulti) return false;
-                    
-                    // B. 他の色（赤など）もアクティブな場合、その色「全て」を含んでいる必要がある
-                    // 修正点：some ➔ every に変更し、AND検索化
                     if (reqSpecificColors.length > 0) {
                         if (!reqSpecificColors.every(col => c.color.includes(col))) return false;
                     }
-                    // 他に色が選択されていなければ、すべての多色を表示（何もしない）
                 } else {
-                    // 「多」ボタンが非アクティブな場合
-                    
-                    // 具体的な色指定がある場合のみ従来のOR検索
-                    // 例: 「赤」選択 -> 赤単色、赤緑、赤白などがヒット（多色も含むが多色限定ではない）
                     if (reqSpecificColors.length > 0) {
                         if (!reqSpecificColors.some(col => c.color.includes(col))) return false;
                     }
                 }
 
-                // 【5. その他のフィルター】
                 if (q.keywords.length > 0 && !q.keywords.every(key => c.searchText.includes(key))) return false;
                 if (q.rares.length > 0 && !q.rares.some(r => c.rarity === r)) return false;
                 if (c.costTotal < q.cMin || c.costTotal > q.cMax) return false;
@@ -693,7 +715,6 @@
             
             filtered.sort((a, b) => {
                 let valA, valB;
-                
                 if (sortKey === 'name') {
                     valA = a.reading || a.name; 
                     valB = b.reading || b.name;
@@ -704,14 +725,16 @@
                     valA = a[sortKey] || 0; 
                     valB = b[sortKey] || 0;
                 }
-                
                 if (valA !== valB) {
                     return (valA - valB) * sortDir;
                 }
                 return a.id - b.id;
             });
 
-            renderResults(filtered);
+            // 【ページネーションのリセット】
+            currentFilteredList = filtered;
+            currentDisplayLimit = LOAD_STEP; // 初期表示は50枚
+            renderResults(currentFilteredList, true); // true = リセット(上書き)モード
         }
 
         function formatEffect(text) {
@@ -721,17 +744,48 @@
                 const cleanContent = content.trim();
                 const safeMatch = match.replace(/"/g, '&quot;');
                 const safeContent = cleanContent.replace(/'/g, "\\'");
-                // 変更: data/images/icons/
                 return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
             });
         }
 
-        function renderResults(list) {
+        // 【修正】リストレンダリング関数（ページネーション対応）
+        // list: 全リスト, isReset: trueなら全消去して最初から、falseなら追加
+        function renderResults(list, isReset = false) {
             const area = document.getElementById('search-results'); 
-            area.innerHTML = '';
             const mobile = isMobile();
             
-            list.forEach(c => {
+            // 検索条件がない場合の処理
+            if (list.length === 0 && isReset) {
+                // 実際に検索ヒット0件なのか、初期状態なのかを currentFilteredList で判定
+                // （filterCardsで空検索時は currentFilteredList = [] にしている）
+                // ただし、検索結果が本当に0件の場合もありうる。
+                // 簡易的に「検索ボックスが空」ならメッセージ、そうでなければ「該当なし」とするロジックはfilterCards側で制御済み。
+                area.innerHTML = '<div class="empty-message">キーワードや条件を入力して検索してください<br>(結果はここに表示されます)</div>';
+                if(document.getElementById('q-text').value !== "" || document.querySelectorAll('#advanced-filters input:checked').length > 0) {
+                     area.innerHTML = '<div class="empty-message">該当するカードが見つかりませんでした</div>';
+                }
+                return;
+            }
+
+            // 「もっと見る」ボタンを一旦削除（再描画のため）
+            const oldBtn = document.getElementById('btn-load-more-area');
+            if (oldBtn) oldBtn.remove();
+
+            // リセット時は中身を空にする
+            if (isReset) {
+                area.innerHTML = '';
+            }
+
+            // 表示範囲を決定
+            // isResetなら 0 ～ Limit
+            // 追加なら 前回の末尾 ～ Limit
+            // 実際はDOMに残すので、レンダリング対象だけを抽出する
+            const startIndex = isReset ? 0 : document.querySelectorAll('.card-row').length;
+            const endIndex = Math.min(list.length, currentDisplayLimit);
+            
+            const listToRender = list.slice(startIndex, endIndex);
+
+            listToRender.forEach(c => {
                 const safeName = c.name.replace(/'/g, "\\'");
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
@@ -758,7 +812,6 @@
                 const imgClickAction = (mobile || c.isToken) ? "" : `onclick="addToDeck('${safeNameAttr}')"`;
                 const addBtn = c.isToken ? "" : `<button class="btn btn-green btn-add" onclick="addToDeck('${safeNameAttr}')">+</button>`;
                 
-                // 変更: data/images/
                 div.innerHTML = `
                     <div class="img-box" ${imgClickAction}>
                         <img src="data/images/${c.fileName}" onerror="this.src='https://via.placeholder.com/50x70?text=NoImg'">
@@ -772,10 +825,25 @@
                     </div>
                     ${addBtn}
                 `;
-                // 変更: data/images/
                 enablePreview(div.querySelector('.img-box img'), `data/images/${c.fileName}`);
                 area.appendChild(div);
             });
+
+            // まだ表示しきれていないカードがある場合、ボタンを追加
+            if (list.length > currentDisplayLimit) {
+                const remaining = list.length - currentDisplayLimit;
+                const btnArea = document.createElement('div');
+                btnArea.id = 'btn-load-more-area';
+                btnArea.className = 'load-more-area';
+                btnArea.innerHTML = `<button class="btn btn-blue" onclick="loadMoreCards()" style="padding: 10px 20px; font-size:14px;">▼ もっと見る (残り${remaining}枚)</button>`;
+                area.appendChild(btnArea);
+            }
+        }
+
+        // 【追加】もっと見るボタンの処理
+        function loadMoreCards() {
+            currentDisplayLimit += LOAD_STEP;
+            renderResults(currentFilteredList, false); // 追加モードで描画
         }
 
         function addToDeck(name) {
@@ -807,9 +875,7 @@
                         <button class="ctrl-btn plus" onclick="event.stopPropagation(); addToDeck('${safeNameAttr}')">＋</button>
                     </div>
                 `;
-                // 変更: data/images/
                 div.innerHTML = `<div class="badge">${d.count}</div><img src="data/images/${d.fileName}" ${imgAction}>${deckControls}`;
-                // 変更: data/images/
                 enablePreview(div.querySelector('img'), `data/images/${d.fileName}`);
                 area.appendChild(div);
             });
