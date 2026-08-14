@@ -587,39 +587,74 @@
 
         function loadFile(enc) { const f=document.getElementById('csv-file').files[0]; if(!f)return; const r=new FileReader(); r.onload=(e)=>{ parseCSV(e.target.result); document.getElementById('file-overlay').style.display='none'; }; r.readAsText(f,enc); }
         
-        function parseCSV(txt) {
-            const lines = txt.split(/\r?\n/);
-            MASTER_DB = [];
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim(); if(!line) continue;
-                const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cells.length < 16) continue;
+        // CSVテキストを安全に読み込む専用の関数（改行対応）
+        function parseCSVToArray(txt) {
+            const result = [];
+            let currentLine = [];
+            let currentCell = '';
+            let insideQuotes = false;
+            
+            for (let i = 0; i < txt.length; i++) {
+                const char = txt[i];
+                const nextChar = txt[i + 1];
                 
-                const clean = (str) => {
-                    let s = (str || "").trim();
-                    if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1).replace(/""/g, '"');
-                    return s;
-                };
-                let fName = clean(cells[16]);
+                if (char === '"') {
+                    if (insideQuotes && nextChar === '"') {
+                        currentCell += '"';
+                        i++; 
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (char === ',' && !insideQuotes) {
+                    currentLine.push(currentCell.trim());
+                    currentCell = '';
+                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                    if (char === '\r' && nextChar === '\n') i++; 
+                    currentLine.push(currentCell.trim());
+                    if (currentLine.some(c => c !== '')) result.push(currentLine);
+                    currentLine = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            if (currentCell !== '' || currentLine.length > 0) {
+                currentLine.push(currentCell.trim());
+                if (currentLine.some(c => c !== '')) result.push(currentLine);
+            }
+            return result;
+        }
+
+        function parseCSV(txt) {
+            const rows = parseCSVToArray(txt);
+            MASTER_DB = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i];
+                if (cells.length < 18) continue;
+                
+                let fName = cells[16];
                 if (fName && !fName.includes(".")) fName += ".png";
-                const name = clean(cells[0]);
-                const category = clean(cells[3]);
-                const type = clean(cells[4]);
-                const reading = clean(cells[17]); 
+                
+                const name = cells[0];
+                const category = cells[3];
+                const type = cells[4];
+                const reading = cells[17]; 
+                
                 const rawEffects = [cells[11], cells[12], cells[13], cells[14]];
-                const effect = rawEffects.map(t => clean(t)).filter(t => t !== "" && t !== "-" && t !== "‐").join("\n");
+                const effect = rawEffects.filter(t => t !== "" && t !== "-" && t !== "‐").join("\n");
+                
                 const toHira = (str) => str.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
                 const rawText = name + reading + type + category + effect;
                 const searchText = (rawText + toHira(rawText)).toLowerCase();
                 
-                // トークン判定
                 const isToken = category.includes("トークン") || type.includes("トークン");
 
                 MASTER_DB.push({
                     id: i, name: name, reading: reading, 
-                    color: clean(cells[1]), rarity: clean(cells[2]), category: category, type: type,
-                    costTotal: parseInt(clean(cells[6])) || 0,
-                    atk: parseInt(clean(cells[8])) || 0, hp: parseInt(clean(cells[9])) || 0,
+                    color: cells[1], rarity: cells[2], category: category, type: type,
+                    costTotal: parseInt(cells[6]) || 0,
+                    atk: parseInt(cells[8]) || 0, hp: parseInt(cells[9]) || 0,
                     effect: effect, fileName: fName, searchText: searchText,
                     isToken: isToken 
                 });
@@ -809,8 +844,8 @@
                     subInfoHtml = `<span class="info-scroll-area">${infoParts.join(" | ")}</span>`;
                 }
 
-                const imgClickAction = (mobile || c.isToken) ? "" : `onclick="addToDeck('${safeNameAttr}')"`;
-                const addBtn = c.isToken ? "" : `<button class="btn btn-green btn-add" onclick="addToDeck('${safeNameAttr}')">+</button>`;
+                const imgClickAction = (mobile || c.isToken) ? "" : `onclick="addToDeck(${c.id})"`;
+                const addBtn = c.isToken ? "" : `<button class="btn btn-green btn-add" onclick="addToDeck(${c.id})">+</button>`;
                 
                 div.innerHTML = `
                     <div class="img-box" ${imgClickAction}>
@@ -846,12 +881,12 @@
             renderResults(currentFilteredList, false); // 追加モードで描画
         }
 
-        function addToDeck(name) {
-            const master = MASTER_DB.find(d => d.name === name);
+        function addToDeck(id) {
+            const master = MASTER_DB.find(d => d.id === id);
             if (!master) return;
             if (master.isToken) return;
 
-            const inDeck = myDeck.find(d => d.name === name);
+            const inDeck = myDeck.find(d => d.id === id);
             if (inDeck) { if (inDeck.count >= CONFIG.maxCardsInDeck) return; inDeck.count++; } 
             else { myDeck.push({...master, count: 1}); }
             myDeck.sort((a,b) => a.id - b.id); renderDeck();
@@ -867,12 +902,12 @@
                 const safeNameAttr = safeName.replace(/"/g, "&quot;");
                 
                 const div = document.createElement('div'); div.className = 'deck-item';
-                const imgAction = (mobile || d.isToken) ? "" : `onclick="addToDeck('${safeNameAttr}')" oncontextmenu="event.preventDefault(); removeFromDeck('${safeNameAttr}')"`;
+                const imgAction = (mobile || d.isToken) ? "" : `onclick="addToDeck(${d.id})" oncontextmenu="event.preventDefault(); removeFromDeck(${d.id})"`;
                 
                 const deckControls = `
                     <div class="deck-controls">
-                        <button class="ctrl-btn minus" onclick="event.stopPropagation(); removeFromDeck('${safeNameAttr}')">－</button>
-                        <button class="ctrl-btn plus" onclick="event.stopPropagation(); addToDeck('${safeNameAttr}')">＋</button>
+                        <button class="ctrl-btn minus" onclick="event.stopPropagation(); removeFromDeck(${d.id})">－</button>
+                        <button class="ctrl-btn plus" onclick="event.stopPropagation(); addToDeck(${d.id})">＋</button>
                     </div>
                 `;
                 div.innerHTML = `<div class="badge">${d.count}</div><img src="data/images/${d.fileName}" ${imgAction}>${deckControls}`;
@@ -884,9 +919,9 @@
             if (navBadge) { navBadge.textContent = totalCards; navBadge.style.display = totalCards > 0 ? 'flex' : 'none'; }
         }
 
-        function removeFromDeck(name) {
-            const inDeck = myDeck.find(d => d.name === name);
-            if (inDeck) { inDeck.count--; if (inDeck.count <= 0) myDeck = myDeck.filter(d => d.name !== name); }
+        function removeFromDeck(id) {
+            const inDeck = myDeck.find(d => d.id === id);
+            if (inDeck) { inDeck.count--; if (inDeck.count <= 0) myDeck = myDeck.filter(d => d.id !== id); }
             renderDeck();
         }
 

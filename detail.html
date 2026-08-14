@@ -34,20 +34,58 @@
     const CSV_PATH = 'data/card_list.csv'; 
     function getParam(name) { return new URLSearchParams(window.location.search).get(name); }
     
-    function parseCSV(text) {
-        const lines = text.split(/\r?\n/);
-        const headers = lines[0].split(',').map(h => h.trim());
+    // CSVテキストを安全に読み込む専用の関数
+    function parseCSVToArray(txt) {
         const result = [];
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            if(cells.length < headers.length) continue;
+        let currentLine = [];
+        let currentCell = '';
+        let insideQuotes = false;
+        
+        for (let i = 0; i < txt.length; i++) {
+            const char = txt[i];
+            const nextChar = txt[i + 1];
+            
+            if (char === '"') {
+                if (insideQuotes && nextChar === '"') {
+                    currentCell += '"';
+                    i++; 
+                } else {
+                    insideQuotes = !insideQuotes;
+                }
+            } else if (char === ',' && !insideQuotes) {
+                currentLine.push(currentCell.trim());
+                currentCell = '';
+            } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                if (char === '\r' && nextChar === '\n') i++; 
+                currentLine.push(currentCell.trim());
+                if (currentLine.some(c => c !== '')) result.push(currentLine);
+                currentLine = [];
+                currentCell = '';
+            } else {
+                currentCell += char;
+            }
+        }
+        if (currentCell !== '' || currentLine.length > 0) {
+            currentLine.push(currentCell.trim());
+            if (currentLine.some(c => c !== '')) result.push(currentLine);
+        }
+        return result;
+    }
+
+    function parseCSV(text) {
+        const rows = parseCSVToArray(text);
+        if (rows.length === 0) return [];
+        
+        const headers = rows[0];
+        const result = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i];
+            if (cells.length < headers.length) continue;
+            
             const obj = {};
             for (let j = 0; j < headers.length; j++) {
-                let val = cells[j] ? cells[j].trim() : '';
-                if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1).replace(/""/g, '"');
-                obj[headers[j]] = val;
+                obj[headers[j]] = cells[j] || '';
             }
             result.push(obj);
         }
