@@ -160,14 +160,23 @@ function executeGlobalSearch() {
  */
 function formatEffect(text) {
     if (!text) return "";
+    
+    // ★本物のアイコンの名前リスト
+    const validIcons = ["赤", "青", "緑", "白", "黒", "無", "多", "T", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "X"];
+    
     // 全角括弧を半角に統一
     let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
     
     return normalized.replace(/\(([^()]{1,15})\)/g, (match, content) => {
         const cleanContent = content.trim();
-        const safeMatch = match.replace(/"/g, '&quot;');
-        // 変更: ../data/images/icons/
-        return `<img src="../data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
+        
+        if (validIcons.includes(cleanContent)) {
+            const safeMatch = match.replace(/"/g, '&quot;');
+            // 変更: ../data/images/icons/
+            return `<img src="../data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}">`;
+        } else {
+            return match;
+        }
     });
 }
 
