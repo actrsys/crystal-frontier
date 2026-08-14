@@ -774,12 +774,23 @@
 
         function formatEffect(text) {
             if (!text) return "";
+            
+            // ★本物のアイコンの名前をここに登録します
+            // 新しいアイコンを追加したい場合は、ここに "名前" をカンマ区切りで書き足してください
+            const validIcons = ["赤", "青", "緑", "白", "黒", "無", "多", "T", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "X"];
+            
             let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
             return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
                 const cleanContent = content.trim();
-                const safeMatch = match.replace(/"/g, '&quot;');
-                const safeContent = cleanContent.replace(/'/g, "\\'");
-                return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
+                
+                // 登録されたアイコンリストに入っているか確認
+                if (validIcons.includes(cleanContent)) {
+                    const safeMatch = match.replace(/"/g, '&quot;');
+                    return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}">`;
+                } else {
+                    // リストに無い場合は、そのままの文字(テキスト)として残す
+                    return match;
+                }
             });
         }
 
