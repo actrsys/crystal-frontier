@@ -94,12 +94,19 @@
 
     function formatText(text) {
         if (!text) return "";
+        
+        const validIcons = ["赤", "青", "緑", "白", "黒", "無", "多", "T", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "X"];
+        
         let normalized = text.replace(/（/g, '(').replace(/）/g, ')');
         return normalized.replace(/\(([^)]{1,15})\)/g, (match, content) => {
             const cleanContent = content.trim();
-            const safeMatch = match.replace(/"/g, '&quot;');
-            // 変更: data/images/icons/
-            return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${safeMatch}')">`;
+            
+            if (validIcons.includes(cleanContent)) {
+                const safeMatch = match.replace(/"/g, '&quot;');
+                return `<img src="data/images/icons/${cleanContent}.png" class="inline-icon" alt="${safeMatch}">`;
+            } else {
+                return match;
+            }
         });
     }
 
